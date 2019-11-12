@@ -5,7 +5,7 @@ class ShowDataForm extends Component {
     constructor(){
         super();
         this.state = {
-            match: []
+            matches: []
         };
         this.handleClick = this.handleClick.bind(this);
     }
@@ -18,17 +18,23 @@ class ShowDataForm extends Component {
             }
         });
         const data = await response.json();
-        console.log(data);
         this.setState({
-            match: data
+            matches: data
         });
     }
 
     render(){
+        const { matches } = this.state;
+
         return (
-            <button
-                onClick={this.handleClick}
-            >Go</button>
+            <div>
+                <button
+                    onClick={this.handleClick}
+                >
+                    Go
+                </button>
+                {matches.length > 0 && matches.map(match => <div  key={match.id}>{match.teams}</div>)}
+            </div>
         )
     }
 }
