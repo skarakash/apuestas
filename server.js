@@ -14,10 +14,20 @@ app.use((req, res, next) => {
 });
 
 
-app.get(`/`, (req,res) => {
+app.get(`/home`, (req,res) => {
 	res.send('Home');
 });
 
+
+app.get('/match', (req,res) => {
+    Match.findAll({
+        where: {
+            id: 2000
+        }
+    }).then(result => {
+        res.json(result)
+    }).catch(err => res.send(`Error happened: ${err}`));
+});
 
 app.listen(port, ()=> console.log(`running on ${port}`));
 
