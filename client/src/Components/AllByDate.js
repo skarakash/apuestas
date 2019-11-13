@@ -32,7 +32,6 @@ class AllByDate extends Component{
     }
 
     async fetchData(date, league_id){
-        debugger;
         try {
             const response = await fetch('/byDate', {
                 method: 'POST',
@@ -69,9 +68,9 @@ class AllByDate extends Component{
 
 
     renderData(){
-        const {matches} = this.state;
+        const {matches, date} = this.state;
         let matchesToRender = matches.filter(match => match.events && match.events.length > 0);
-       return matchesToRender.map(match => <div key={match.id}>{finalview(match)}</div>)
+       return matchesToRender.map(match => <div key={match.id}>{finalview(match,date)}</div>)
     }
 
     getAllMatchesDetailsById(){

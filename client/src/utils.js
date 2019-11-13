@@ -38,13 +38,13 @@ const getPoint = (data, n)  => {
     }
 };
 
-const finalview = dataObj => {
+const finalview = (dataObj, date) => {
     let points = [30,35,40,45,50,55, 64];
     const home = dataObj.home.name;
     const away = dataObj.away.name;
     const tournament = dataObj.league.name;
     const numbers = points.map(point => getPoint(dataObj.events, point));
-    return `('${home} - ${away}', '${tournament}', '19/20', ${numbers}),`
+    return `('${home} - ${away}', '${tournament}', '${date}', ${numbers}),`
 };
 
 module.exports = {
