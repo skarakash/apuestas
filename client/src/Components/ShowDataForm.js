@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 
-
 class ShowDataForm extends Component {
     constructor(){
         super();

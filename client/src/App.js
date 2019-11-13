@@ -5,6 +5,8 @@ import {
     Route,
     Link
 } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 import ShowDataForm from './Components/ShowDataForm';
 import Home from './Components/Home';
@@ -17,20 +19,20 @@ function App() {
               <nav>
                   <ul>
                       <li>
-                          <Link to="/showDataForm">Show Data Form</Link>
+                          <Link to="/">Home</Link>
                       </li>
                       <li>
-                          <Link to="/">Home</Link>
+                          <Link to="/showDataForm">Show Data Form</Link>
                       </li>
                   </ul>
               </nav>
 
               <Switch>
+                  <Route exact path="/">
+                      <Home />
+                  </Route>
                   <Route path="/showDataForm">
                       <ShowDataForm />
-                  </Route>
-                  <Route path="/">
-                      <Home />
                   </Route>
               </Switch>
           </div>
