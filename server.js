@@ -19,14 +19,18 @@ app.get(`/home`, (req,res) => {
 });
 
 
-app.get('/match', (req,res) => {
-    Match.findAll({
-        where: {
-            id: 2000
-        }
-    }).then(result => {
-        res.json(result)
-    }).catch(err => res.send(`Error happened: ${err}`));
+app.post('/allData', (req,res) => {
+    const requestData = req.body;
+    console.log(requestData);
+    if (Object.getOwnPropertyNames(requestData).length > 0) {
+        Match.findAll({
+            where: requestData
+        }).then(result => {
+            res.json(result)
+        }).catch(err => res.send(`Error happened: ${err}`));
+    } else {
+        res.json([])
+    }
 });
 
 app.listen(port, ()=> console.log(`running on ${port}`));
