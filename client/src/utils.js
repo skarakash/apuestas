@@ -19,6 +19,24 @@ const transformEvents = arr => {
         });
 };
 
+const getGameData = (obj, date) => {
+    if (date.length !== 8) {
+        throw new Error('Check date!!');
+    }
+    return  {
+        teams: `${obj.home.name} - ${obj.away.name}`,
+        tournament: `${obj.league.name}`,
+        season: `${date}`,
+        'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
+        '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35) : 0,
+        '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40) : 0,
+        '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45) : 0,
+        '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50) : 0,
+        '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55) : 0,
+        'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 65) : 0,
+    }
+};
+
 const getPoint = (data, n)  => {
     let events = transformEvents(data);
     let exists = events.filter( obj => obj.minute === n).length > 0;
@@ -47,7 +65,14 @@ const finalview = (dataObj, date) => {
     return `('${home} - ${away}', '${tournament}', '${date}', ${numbers}),`
 };
 
+const propb = (arr, n) => {
+    const ok = arr.filter(item => item >= n).length;
+    return (ok * 100) / arr.length;
+};
+
 module.exports = {
     removeFalsy,
-    finalview
+    finalview,
+    getGameData,
+    propb
 };

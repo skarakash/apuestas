@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import GamesTable from './GamesTable'
+import ProbForm from './ProbForm';
 import { removeFalsy } from '../utils';
 
 class ShowDataForm extends Component {
@@ -40,7 +41,7 @@ class ShowDataForm extends Component {
             const data = await response.json();
             this.setState({
                 matches: data
-            }, () => console.log(this.state.matches) );
+            });
         }
         catch (err) {
             console.log('fetch failed', err);
@@ -69,6 +70,7 @@ class ShowDataForm extends Component {
 
     render(){
         const { matches } = this.state;
+        const ftResults = matches.map(match => match['FT']).sort();
         return (
             <div className="container">
             <form onSubmit={this.handleSubmit}>
@@ -172,7 +174,9 @@ class ShowDataForm extends Component {
                     className="btn btn-success"
                 >Go</button>
             </form>
-                <div>{ matches.length > 0 && <GamesTable matches={this.state.matches}/>}</div>
+                {/*<div>{ matches.length > 0 && <GamesTable matches={this.state.matches}/>}</div>*/}
+                <div>{ matches.length > 0 && matches.map(match => match['FT']).sort().join()}</div>
+                <ProbForm results={ftResults} />
             </div>
         )
     }

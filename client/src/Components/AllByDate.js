@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { finalview } from '../utils';
+import { finalview, getGameData } from '../utils';
 
 class AllByDate extends Component{
     constructor(){
@@ -14,6 +14,7 @@ class AllByDate extends Component{
         this.handleChange = this.handleChange.bind(this);
         this.fetchData = this.fetchData.bind(this);
         this.getAllMatchesDetailsById = this.getAllMatchesDetailsById.bind(this);
+        this.insertMatches = this.insertMatches.bind(this);
     }
 
     handleSubmit(e){
@@ -48,6 +49,18 @@ class AllByDate extends Component{
         }
     }
 
+    async insertRows(arr){
+        const promises = arr.map( async match => {
+            const response = await fetch('/insert', {
+                method: 'POST',
+                body: JSON.stringify({match}),
+                headers: {"Content-Type": "application/json"}
+            });
+            return await response.json();
+        });
+        const res =  await Promise.all(promises);
+    }
+
     async getAllById(arr){
         const promises = arr.map( async id => {
             const response = await fetch('/byId', {
@@ -62,7 +75,14 @@ class AllByDate extends Component{
         this.setState({
             matches: res
         })
+    }
 
+    insertMatches(){
+        const { matches, date } = this.state;
+        if (matches.length > 0) {
+          let data =  matches.map(match => getGameData(match, date)).filter(item => item['FT'] !== 0);
+          this.insertRows(data);
+        }
     }
 
 
@@ -105,6 +125,14 @@ class AllByDate extends Component{
                 </button>}
                 <br/>
                 {this.renderData()}
+
+                {matches.length > 0 &&
+                <button
+                    className="btn btn-success"
+                    onClick={this.insertMatches}
+                >
+                    Insert in DB
+                </button>}
             </div>
         )
     }

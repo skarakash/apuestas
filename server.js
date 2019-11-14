@@ -28,7 +28,7 @@ app.post('/allData', (req,res) => {
             where: requestData
         }).then(result => {
             res.json(result)
-        }).catch(err => res.send(`Error happened: ${err}`));
+        }).catch(error => res.send(`Error happened: ${error}`));
     } else {
         res.json([])
     }
@@ -41,7 +41,7 @@ app.post('/byDate', (req,res) => {
             { url },
             (error, response, body) => {
                 if (error || response.statusCode !== 200) {
-                    return res.status(500).json({ type: 'error', message: err.message });
+                    return res.status(500).json({ type: 'error', message: error });
                 }
 
                 res.json(JSON.parse(body));
@@ -58,12 +58,23 @@ app.post('/byId', (req,res) => {
         { url },
         (error, response, body) => {
             if (error || response.statusCode !== 200) {
-                return res.status(500).json({ type: 'error', message: err.message });
+                return res.status(500).json({ type: 'error', message: error });
             }
 
             res.json(JSON.parse(body));
         }
     )
+});
+
+app.post('/insert', (req, res) => {
+    Match.findOrCreate({ where : req.body.match})
+        .spread((match, created) => {
+        console.log(created);
+    }).then(match => {
+        res.json('ok');
+    }).catch(err => {
+        console.log(err);
+    })
 });
 
 app.listen(port, ()=> console.log(`running on ${port}`));
