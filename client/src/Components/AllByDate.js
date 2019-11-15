@@ -9,7 +9,8 @@ class AllByDate extends Component{
             tournamentId: null,
             matchesIds: [],
             matches:[],
-            dbSpinner:  false
+            dbSpinner:  false,
+            allByIdSpinner: false
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -62,8 +63,10 @@ class AllByDate extends Component{
                 headers: {"Content-Type": "application/json"}
             });
             this.setState({
-                dbSpinner: false
-            })
+                dbSpinner: false,
+                matches: [],
+                matchesIds: []
+            });
             return await response.json();
 
         });
@@ -71,6 +74,9 @@ class AllByDate extends Component{
     }
 
     async getAllById(arr){
+        this.setState({
+            allByIdSpinner: true
+        });
         const promises = arr.map( async id => {
             const response = await fetch('/byId', {
                 method: 'POST',
@@ -82,7 +88,8 @@ class AllByDate extends Component{
         });
         const res =  await Promise.all(promises);
         this.setState({
-            matches: res
+            matches: res,
+            allByIdSpinner: false
         })
     }
 
@@ -127,7 +134,7 @@ class AllByDate extends Component{
                 <br/>
                 {matchesIds.length > 0 &&
                 <button
-                    className="btn btn-success"
+                    className={this.state.allByIdSpinner ? 'btn btn-danger' : 'btn btn-success'}
                     onClick={this.getAllMatchesDetailsById}
                 >
                     Get all by id
