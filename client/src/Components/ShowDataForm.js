@@ -174,8 +174,11 @@ class ShowDataForm extends Component {
                     className="btn btn-success"
                 >Go</button>
             </form>
-                {/*<div>{ matches.length > 0 && <GamesTable matches={this.state.matches}/>}</div>*/}
-                <div>{ matches.length > 0 && matches.map(match => match['FT']).sort().join()}</div>
+                <div
+                    className="container results"
+                >
+                    { matches.length > 0 && matches.map(match => match['FT']).sort().join()}
+                </div>
                 <ProbForm results={ftResults} />
             </div>
         )

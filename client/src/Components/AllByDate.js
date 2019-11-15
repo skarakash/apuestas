@@ -8,7 +8,8 @@ class AllByDate extends Component{
             date: null,
             tournamentId: null,
             matchesIds: [],
-            matches:[]
+            matches:[],
+            dbSpinner:  false
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -50,13 +51,20 @@ class AllByDate extends Component{
     }
 
     async insertRows(arr){
+        this.setState({
+            dbSpinner: true
+        });
         const promises = arr.map( async match => {
             const response = await fetch('/insert', {
                 method: 'POST',
                 body: JSON.stringify({match}),
                 headers: {"Content-Type": "application/json"}
             });
+            this.setState({
+                dbSpinner: false
+            })
             return await response.json();
+
         });
         const res =  await Promise.all(promises);
     }
@@ -128,7 +136,7 @@ class AllByDate extends Component{
 
                 {matches.length > 0 &&
                 <button
-                    className="btn btn-success"
+                    className={this.state.dbSpinner ? 'btn btn-danger' : 'btn btn-success'}
                     onClick={this.insertMatches}
                 >
                     Insert in DB

@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const { sequelize } = require('../config');
 
-const Match = sequelize.define('handball_copy', {
+const Match = sequelize.define('handball', {
     tournament: {
         type: Sequelize.STRING,
         allowNull: false
