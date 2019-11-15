@@ -15,9 +15,13 @@
     "mysql2": "^2.0.0",
     "react-bootstrap": "^1.0.0-beta.14",
     "react-router-dom": "^5.1.2",
+    "request": "^2.88.0",
     "sequelize": "^5.21.2"
   },
   "devDependencies": {
     "nodemon": "^1.19.4"
   }
 }
+
+//    353191
+//  curl "https://api.betsapi.com/v1/event/view?token=9592-4fLZMMQS4YDdoY&event_id=353191"

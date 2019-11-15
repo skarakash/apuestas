@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import GamesTable from './GamesTable'
 import ProbForm from './ProbForm';
 import { removeFalsy } from '../utils';
 
