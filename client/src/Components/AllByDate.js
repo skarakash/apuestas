@@ -34,6 +34,7 @@ class AllByDate extends Component{
     }
 
     async fetchData(date, league_id){
+
         try {
             const response = await fetch('/byDate', {
                 method: 'POST',
