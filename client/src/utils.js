@@ -19,14 +19,11 @@ const transformEvents = arr => {
         });
 };
 
-const getGameData = (obj, date) => {
-    if (date.length !== 8) {
-        throw new Error('Check date!!');
-    }
+const getGameData = (obj) => {
     return  {
         teams: `${obj.home.name} - ${obj.away.name}`,
         tournament: `${obj.league.name}`,
-        season: `${date}`,
+        season: `${new Date(obj.time * 1000)}`,
         'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
         '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35) : 0,
         '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40) : 0,
@@ -56,13 +53,14 @@ const getPoint = (data, n)  => {
     }
 };
 
-const finalview = (dataObj, date) => {
+const finalview = (dataObj) => {
     let points = [30,35,40,45,50,55, 64];
     const home = dataObj.home.name;
     const away = dataObj.away.name;
     const tournament = dataObj.league.name;
     const numbers = points.map(point => getPoint(dataObj.events, point));
-    return `('${home} - ${away}', '${tournament}', '${date}', ${numbers}),`
+    const date = new Date(dataObj.time * 1000);
+    return `('${home} - ${away}', '${tournament}', '${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}', ${numbers}),`
 };
 
 const propb = (arr, n) => {
