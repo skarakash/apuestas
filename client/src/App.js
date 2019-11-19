@@ -22,9 +22,6 @@ function App() {
               <nav>
                   <ul>
                       <li>
-                          <Link to="/">Home</Link>
-                      </li>
-                      <li>
                           <Link to="/showDataForm">Show Data Form</Link>
                       </li>
                       <li>
@@ -37,9 +34,6 @@ function App() {
               </nav>
 
               <Switch>
-                  <Route exact path="/">
-                      <Home />
-                  </Route>
                   <Route path="/showDataForm">
                       <ShowDataForm />
                   </Route>

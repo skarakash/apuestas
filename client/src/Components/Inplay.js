@@ -7,7 +7,7 @@ class Inplay extends Component {
     }
 
     render(){
-        return <div>Something...</div>
+        return <div className="container">Something...</div>
     }
 }
 

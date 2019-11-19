@@ -59,8 +59,8 @@ const finalview = (dataObj) => {
     const away = dataObj.away.name;
     const tournament = dataObj.league.name;
     const numbers = points.map(point => getPoint(dataObj.events, point));
-    const date = new Date(dataObj.time * 1000);
-    return `('${home} - ${away}', '${tournament}', '${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}', ${numbers}),`
+    const date = `${new Date(dataObj.time * 1000)}`;
+    return `('${home} - ${away}', '${tournament}', '${date.substr(0,21)}', ${numbers}),`
 };
 
 const propb = (arr, n) => {
