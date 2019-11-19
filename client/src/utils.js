@@ -63,8 +63,13 @@ const finalview = (dataObj) => {
     return `('${home} - ${away}', '${tournament}', '${date.substr(0,21)}', ${numbers}),`
 };
 
-const propb = (arr, n) => {
-    const ok = arr.filter(item => item >= n).length;
+const over = (arr, n) => {
+    const ok = arr.filter(item => item >= Number(n)).length;
+    return (ok * 100) / arr.length;
+};
+
+const under = (arr, n) => {
+    const ok = arr.filter(item => item <= Number(n)).length;
     return (ok * 100) / arr.length;
 };
 
@@ -72,5 +77,5 @@ module.exports = {
     removeFalsy,
     finalview,
     getGameData,
-    propb
+    over, under
 };
