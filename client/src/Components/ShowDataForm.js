@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import Over from './Over';
-import Under from './Under';
+import Over from './Total/Over';
+import Under from './Total/Under';
 import { removeFalsy } from '../utils';
 
 class ShowDataForm extends Component {

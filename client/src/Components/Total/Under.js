@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { over } from '../utils';
+import { under } from '../../utils';
 
-class Over extends Component {
+class Under extends Component {
     constructor(){
         super();
         this.state = {
@@ -24,7 +24,7 @@ class Over extends Component {
         const {results} = this.props;
         const { value } = this.state;
         if (value && results) {
-            const res = over(results, value);
+            const res = under(results, value);
             this.setState({
                 finalRes: res
             })
@@ -37,9 +37,9 @@ class Over extends Component {
             <div className="container">
                 <form onSubmit={this.handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="over">Over</label>
-                        <input type="text" className="form-control" id="over"
-                               aria-describedby="Over" placeholder="Over" onChange={this.handleChange}/>
+                        <label htmlFor="under">Under</label>
+                        <input className="form-control" id="under"
+                               aria-describedby="Under" placeholder="Under" onChange={this.handleChange}/>
                     </div>
                     <button type="submit" className="btn btn-primary">Submit</button>
                 </form>
@@ -50,4 +50,4 @@ class Over extends Component {
 }
 
 
-export default Over;
+export default Under;
