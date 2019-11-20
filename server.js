@@ -77,5 +77,20 @@ app.post('/insert', (req, res) => {
     })
 });
 
+
+app.get('/live', (req,res) => {
+    const url = `https://api.betsapi.com/v1/events/inplay?sport_id=78&token=${token}`;
+    request(
+        { url },
+        (error, response, body) => {
+            if (error || response.statusCode !== 200) {
+                return res.status(500).json({ type: 'error', message: error });
+            }
+
+            res.json(JSON.parse(body));
+        }
+    )
+});
+
 app.listen(port, ()=> console.log(`running on ${port}`));
 
