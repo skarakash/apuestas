@@ -26,20 +26,20 @@ const getGameData = (obj) => {
         season: `${new Date(obj.time * 1000)}`,
         time: obj.timer.tm || 0,
         'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
-        '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35) : 0,
-        '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40) : 0,
-        '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45) : 0,
-        '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50) : 0,
-        '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55) : 0,
-        'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 65) : 0,
+        '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35 , 30) : 0,
+        '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40, 35) : 0,
+        '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45, 40) : 0,
+        '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50, 45) : 0,
+        '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55, 50) : 0,
+        'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 65, 60) : 0,
 
     }
 };
 
-const getPoint = (data, n)  => {
+const getPoint = (data, n, m)  => {
     let events = transformEvents(data);
     let exists = events.filter( obj => obj.minute === n).length > 0;
-    if (n === 0) {
+    if (n === m) {
         return '0'
     } else {
         if (exists) {
@@ -50,7 +50,7 @@ const getPoint = (data, n)  => {
                 return temp[temp.length - 1].goal;
             }
         } else {
-            return getPoint(data, n - 1);
+            return getPoint(data, n - 1, m);
         }
     }
 };
