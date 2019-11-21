@@ -1,60 +1,45 @@
 import React, { Component } from 'react';
-import {removeFalsy} from "../utils";
+import { inplay, getAllById, getGameData } from '../utils';
+
 
 class Inplay extends Component {
     constructor(){
         super();
         this.state = {
-            time: new Date().toLocaleString(),
-            games: {}
+            ids: [],
+            matches: []
         };
 
         this.getGames = this.getGames.bind(this);
-        this.renderData = this.renderData.bind(this);
     }
 
-    componentDidMount(){
-        this.intervalID = setInterval(
-            () => this.getGames(),
-            5000
-        )
-    }
+    getIds = () => inplay().then((data) => {
+        this.setState({
+            ids: data
+        })
+    });
 
-    getGames(){
-        this.inplay();
-    }
-
-
-    async inplay(){
-        try {
-            const response = await fetch('/live');
-            const data = await response.json();
-            console.log(data);
+    getGames = () => getAllById(this.state.ids).then(
+        (data) => {
+            const matches = data.map(game => getGameData(game));
             this.setState({
-                games: data
-            })
+                matches
+            }, () => console.log(this.state.matches))
         }
-        catch (err) {
-            console.log('fetch failed', err);
-        }
-    }
+    );
 
-    renderData(){
-        const { games } = this.state;
-        if (games.results && games.results.length > 0) {
-            const { results } = games;
-            return results.map(res => <div key={res.id}>{res.home.name} - {res.away.name} ||  {res.ss} || {res.timer.tm}: {res.timer.ts}</div>)
-        } else {
-            return <div>some...</div>
-        }
-    }
 
     componentWillUnmount() {
         clearInterval(this.intervalID);
     }
 
     render(){
-        return <div className="container">{this.renderData()}</div>
+        const { ids } = this.state;
+        return <div className="container">
+            {ids.length > 0 && ids.map(id => <div key={id}>{id}</div>)}
+            <button className="btn btn-success" onClick={() => this.getIds()}>LIVE</button>
+            <button className="btn btn-info" onClick={() => this.getGames()}>Display live</button>
+        </div>
     }
 }
 

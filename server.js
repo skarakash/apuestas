@@ -86,7 +86,6 @@ app.get('/live', (req,res) => {
             if (error || response.statusCode !== 200) {
                 return res.status(500).json({ type: 'error', message: error });
             }
-
             res.json(JSON.parse(body));
         }
     )

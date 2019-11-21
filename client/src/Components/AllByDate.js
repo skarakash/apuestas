@@ -94,7 +94,7 @@ class AllByDate extends Component{
     }
 
     insertMatches(){
-        const { matches, date } = this.state;
+        const { matches } = this.state;
         if (matches.length > 0) {
           let data =  matches.map(match => getGameData(match)).filter(item => item['FT'] !== 0);
           this.insertRows(data);

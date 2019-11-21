@@ -73,9 +73,39 @@ const under = (arr, n) => {
     return (ok * 100) / arr.length;
 };
 
+
+ async function getAllById(arr){
+    const promises = arr.map( async id => {
+        const response = await fetch('/byId', {
+            method: 'POST',
+            body: JSON.stringify({id}),
+            headers: {"Content-Type": "application/json"}
+        });
+        let data =  await response.json();
+        return data.results[0];
+    });
+    return await Promise.all(promises);
+}
+
+
+async function inplay(){
+    try {
+        const response = await fetch('/live');
+        const data = await response.json();
+        if (data.results && data.results.length > 0){
+            return data.results.map(res => res.id);
+        }
+    }
+    catch (err) {
+        console.log('fetch failed', err);
+    }
+}
+
 module.exports = {
     removeFalsy,
     finalview,
     getGameData,
-    over, under
+    over, under,
+    getAllById,
+    inplay
 };
