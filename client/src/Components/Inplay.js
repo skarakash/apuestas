@@ -13,32 +13,30 @@ class Inplay extends Component {
         this.getGames = this.getGames.bind(this);
     }
 
-    getIds = () => inplay().then((data) => {
-        this.setState({
-            ids: data
+    getIds = () => inplay()
+        .then((data) => {
+            this.setState({
+                ids: data
+            })
         })
-    });
+        .catch(err => console.log(err));
 
     getGames = () => getAllById(this.state.ids).then(
-        (data) => {
-            const matches = data.map(game => getGameData(game));
+        data => {
+            const matches = data.filter(game => Number(game.timer.tm) >= 45).map(game => getGameData(game));
             this.setState({
                 matches
             }, () => console.log(this.state.matches))
         }
     );
 
-
-    componentWillUnmount() {
-        clearInterval(this.intervalID);
-    }
-
     render(){
-        const { ids } = this.state;
+        const { ids, matches } = this.state;
         return <div className="container">
             {ids.length > 0 && ids.map(id => <div key={id}>{id}</div>)}
             <button className="btn btn-success" onClick={() => this.getIds()}>LIVE</button>
             <button className="btn btn-info" onClick={() => this.getGames()}>Display live</button>
+            { matches.length > 0 && matches.map(match => <div key={match.teams}>{match.teams} {match['HT']}   {match['@35']}  {match['@40']}  {match['@45']}  {match['@50'] || 0}  {match['@55'] || 0} TIME: {match.time}</div>) }
         </div>
     }
 }

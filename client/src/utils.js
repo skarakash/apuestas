@@ -24,6 +24,7 @@ const getGameData = (obj) => {
         teams: `${obj.home.name} - ${obj.away.name}`,
         tournament: `${obj.league.name}`,
         season: `${new Date(obj.time * 1000)}`,
+        time: obj.timer.tm || 0,
         'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
         '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35) : 0,
         '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40) : 0,
@@ -31,6 +32,7 @@ const getGameData = (obj) => {
         '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50) : 0,
         '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55) : 0,
         'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 65) : 0,
+
     }
 };
 
