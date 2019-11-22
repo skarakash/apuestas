@@ -24,14 +24,15 @@ const getGameData = (obj) => {
         teams: `${obj.home.name} - ${obj.away.name}`,
         tournament: `${obj.league.name}`,
         season: `${new Date(obj.time * 1000)}`,
-        time: obj.timer.tm || 0,
+        time: `${obj.timer.tm || 0}: ${obj.timer.ts || 0}`,
+        id: obj.id,
         'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
         '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35 , 30) : 0,
         '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40, 35) : 0,
         '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45, 40) : 0,
         '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50, 45) : 0,
         '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55, 50) : 0,
-        'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 65, 60) : 0,
+        'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 62, 55) : 0,
 
     }
 };
@@ -90,7 +91,7 @@ const under = (arr, n) => {
 }
 
 
-async function inplay(){
+async function getAllLive(){
     try {
         const response = await fetch('/live');
         const data = await response.json();
@@ -109,5 +110,5 @@ module.exports = {
     getGameData,
     over, under,
     getAllById,
-    inplay
+    getAllLive
 };

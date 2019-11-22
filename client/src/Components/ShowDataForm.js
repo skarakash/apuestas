@@ -19,7 +19,7 @@ class ShowDataForm extends Component {
                 buttonHT: true,
                 button35: true,
                 button40: true,
-                button45: true,
+                button45: false,
                 button50: false,
                 button55: false,
             },

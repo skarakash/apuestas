@@ -91,5 +91,20 @@ app.get('/live', (req,res) => {
     )
 });
 
+app.post('/odds', (req,res) => {
+    const url = `https://api.betsapi.com/v2/event/odds?token=${token}&event_id=${req.body.id}&source=bet365&odds_market=3`;
+    // const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.body.date}&league_id=${req.body.league_id}`;
+        request(
+            { url },
+            (error, response, body) => {
+                if (error || response.statusCode !== 200) {
+                    return res.status(500).json({ type: 'error', message: error });
+                }
+
+                res.json(JSON.parse(body));
+            }
+        )
+});
+
 app.listen(port, ()=> console.log(`running on ${port}`));
 
