@@ -32,7 +32,7 @@ class Inplay extends Component {
             getAllById(this.state.ids)
                 .then(
                     data => {
-                        const matches = data.filter(game => Number(game.time_status) === 1 && game.timer.tm >= 45).map(game => getGameData(game));
+                        const matches = data.map(game => getGameData(game));
                         this.setState({
                             matches
                         })
