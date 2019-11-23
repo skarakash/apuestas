@@ -24,12 +24,13 @@ const getGameData = (obj) => {
         teams: `${obj.home.name} - ${obj.away.name}`,
         tournament: `${obj.league.name}`,
         season: `${new Date(obj.time * 1000)}`,
-        time: `${obj.timer.tm || 0}: ${obj.timer.ts || 0}`,
+        min: obj.timer? Number(obj.timer.tm) : 0,
+        sec: obj.timer? Number(obj.timer.ts) : 0,
         id: obj.id,
         'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
         '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35 , 30) : 0,
         '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40, 35) : 0,
-        '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45, 40) : 0,
+        '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45, 39) : 0,
         '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50, 45) : 0,
         '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55, 50) : 0,
         'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 62, 55) : 0,
@@ -68,7 +69,7 @@ const finalview = (dataObj) => {
 
 const over = (arr, n) => {
     const ok = arr.filter(item => item >= Number(n)).length;
-    return (ok * 100) / arr.length;
+    return { probability : (ok * 100) / arr.length, total: n }
 };
 
 const under = (arr, n) => {
