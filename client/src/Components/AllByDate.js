@@ -93,9 +93,9 @@ class AllByDate extends Component{
     }
 
     insertMatches(){
-        const { matches, date } = this.state;
+        const { matches } = this.state;
         if (matches.length > 0) {
-          let data =  matches.map(match => getGameData(match, date)).filter(item => item['FT'] !== 0);
+          let data =  matches.map(match => getGameData(match)).filter(item => item['FT'] !== 0);
           this.insertRows(data);
         }
     }
@@ -105,7 +105,7 @@ class AllByDate extends Component{
     renderData(){
         const {matches, date} = this.state;
         let matchesToRender = matches.filter(match => match.events && match.events.length > 0);
-       return matchesToRender.map(match => <div key={match.id}>{finalview(match,date)}</div>)
+       return matchesToRender.map(match => <div key={match.id}>{finalview(match)}</div>)
     }
 
     getAllMatchesDetailsById(){

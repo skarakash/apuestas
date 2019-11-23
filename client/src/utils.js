@@ -19,28 +19,28 @@ const transformEvents = arr => {
         });
 };
 
-const getGameData = (obj, date) => {
-    if (date.length !== 8) {
-        throw new Error('Check date!!');
-    }
+const getGameData = (obj) => {
     return  {
         teams: `${obj.home.name} - ${obj.away.name}`,
         tournament: `${obj.league.name}`,
-        season: `${date}`,
+        season: `${new Date(obj.time * 1000)}`,
+        time: `${obj.timer.tm || 0}: ${obj.timer.ts || 0}`,
+        id: obj.id,
         'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
-        '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35) : 0,
-        '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40) : 0,
-        '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45) : 0,
-        '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50) : 0,
-        '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55) : 0,
-        'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 65) : 0,
+        '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35 , 30) : 0,
+        '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40, 35) : 0,
+        '@45': obj.events && obj.events.length > 0 ? getPoint(obj.events, 45, 40) : 0,
+        '@50': obj.events && obj.events.length > 0 ? getPoint(obj.events, 50, 45) : 0,
+        '@55': obj.events && obj.events.length > 0 ? getPoint(obj.events, 55, 50) : 0,
+        'FT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 62, 55) : 0,
+
     }
 };
 
-const getPoint = (data, n)  => {
+const getPoint = (data, n, m)  => {
     let events = transformEvents(data);
     let exists = events.filter( obj => obj.minute === n).length > 0;
-    if (n === 0) {
+    if (n === m) {
         return '0'
     } else {
         if (exists) {
@@ -51,28 +51,64 @@ const getPoint = (data, n)  => {
                 return temp[temp.length - 1].goal;
             }
         } else {
-            return getPoint(data, n - 1);
+            return getPoint(data, n - 1, m);
         }
     }
 };
 
-const finalview = (dataObj, date) => {
+const finalview = (dataObj) => {
     let points = [30,35,40,45,50,55, 64];
     const home = dataObj.home.name;
     const away = dataObj.away.name;
     const tournament = dataObj.league.name;
     const numbers = points.map(point => getPoint(dataObj.events, point));
-    return `('${home} - ${away}', '${tournament}', '${date}', ${numbers}),`
+    const date = `${new Date(dataObj.time * 1000)}`;
+    return `('${home} - ${away}', '${tournament}', '${date.substr(0,21)}', ${numbers}),`
 };
 
-const propb = (arr, n) => {
-    const ok = arr.filter(item => item >= n).length;
+const over = (arr, n) => {
+    const ok = arr.filter(item => item >= Number(n)).length;
     return (ok * 100) / arr.length;
 };
+
+const under = (arr, n) => {
+    const ok = arr.filter(item => item <= Number(n)).length;
+    return (ok * 100) / arr.length;
+};
+
+
+ async function getAllById(arr){
+    const promises = arr.map( async id => {
+        const response = await fetch('/byId', {
+            method: 'POST',
+            body: JSON.stringify({id}),
+            headers: {"Content-Type": "application/json"}
+        });
+        let data =  await response.json();
+        return data.results[0];
+    });
+    return await Promise.all(promises);
+}
+
+
+async function getAllLive(){
+    try {
+        const response = await fetch('/live');
+        const data = await response.json();
+        if (data.results && data.results.length > 0){
+            return data.results.filter(item => item.timer && Number(item.timer.tm) >=45 && Number(item.time_status) === 1 ).map(res => res.id);
+        }
+    }
+    catch (err) {
+        console.log('fetch failed', err);
+    }
+}
 
 module.exports = {
     removeFalsy,
     finalview,
     getGameData,
-    propb
+    over, under,
+    getAllById,
+    getAllLive
 };

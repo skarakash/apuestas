@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { propb } from '../utils';
+import { over } from '../../utils';
 
-class ProbForm extends Component {
+class Over extends Component {
     constructor(){
         super();
         this.state = {
@@ -24,7 +24,7 @@ class ProbForm extends Component {
         const {results} = this.props;
         const { value } = this.state;
         if (value && results) {
-            const res = propb(results, value);
+            const res = over(results, value);
             this.setState({
                 finalRes: res
             })
@@ -38,7 +38,7 @@ class ProbForm extends Component {
                 <form onSubmit={this.handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="over">Over</label>
-                        <input type="number" className="form-control" id="over"
+                        <input type="text" className="form-control" id="over"
                                aria-describedby="Over" placeholder="Over" onChange={this.handleChange}/>
                     </div>
                     <button type="submit" className="btn btn-primary">Submit</button>
@@ -50,4 +50,4 @@ class ProbForm extends Component {
 }
 
 
-export default ProbForm;
+export default Over;

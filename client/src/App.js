@@ -12,6 +12,7 @@ import './App.css';
 import ShowDataForm from './Components/ShowDataForm';
 import Home from './Components/Home';
 import AllByDate from './Components/AllByDate';
+import Inplay from './Components/Inplay';
 
 
 function App() {
@@ -21,26 +22,26 @@ function App() {
               <nav>
                   <ul>
                       <li>
-                          <Link to="/">Home</Link>
-                      </li>
-                      <li>
                           <Link to="/showDataForm">Show Data Form</Link>
                       </li>
                       <li>
                           <Link to="/byDate">All by date</Link>
                       </li>
+                      <li>
+                          <Link to="/inplay">Inplay</Link>
+                      </li>
                   </ul>
               </nav>
 
               <Switch>
-                  <Route exact path="/">
-                      <Home />
-                  </Route>
                   <Route path="/showDataForm">
                       <ShowDataForm />
                   </Route>
                   <Route path="/byDate">
                       <AllByDate />
+                  </Route>
+                  <Route path="/inplay">
+                      <Inplay />
                   </Route>
               </Switch>
           </div>

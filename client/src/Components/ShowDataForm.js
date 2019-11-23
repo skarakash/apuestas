@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import ProbForm from './ProbForm';
+import Over from './Total/Over';
+import Under from './Total/Under';
 import { removeFalsy } from '../utils';
 
 class ShowDataForm extends Component {
@@ -18,7 +19,7 @@ class ShowDataForm extends Component {
                 buttonHT: true,
                 button35: true,
                 button40: true,
-                button45: true,
+                button45: false,
                 button50: false,
                 button55: false,
             },
@@ -178,7 +179,8 @@ class ShowDataForm extends Component {
                 >
                     { matches.length > 0 && matches.map(match => match['FT']).sort().join()}
                 </div>
-                <ProbForm results={ftResults} />
+                <Over results={ftResults} />
+                <Under results={ftResults}/>
             </div>
         )
     }
