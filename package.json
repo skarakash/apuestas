@@ -22,6 +22,3 @@
     "nodemon": "^1.19.4"
   }
 }
-
-//    353191
-//  curl "https://api.betsapi.com/v1/event/view?token=9592-4fLZMMQS4YDdoY&event_id=353191"
