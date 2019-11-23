@@ -70,7 +70,6 @@ class AllByDate extends Component{
             return await response.json();
 
         });
-        const res =  await Promise.all(promises);
     }
 
     async getAllById(arr){
