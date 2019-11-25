@@ -24,9 +24,11 @@ const getGameData = (obj) => {
         teams: `${obj.home.name} - ${obj.away.name}`,
         tournament: `${obj.league.name}`,
         season: `${new Date(obj.time * 1000)}`,
+        league: obj.league.name,
         min: obj.timer? Number(obj.timer.tm) : 0,
         sec: obj.timer? Number(obj.timer.ts) : 0,
         id: obj.id,
+        score: obj.ss,
         'HT': obj.events && obj.events.length > 0 ? getPoint(obj.events, 30) : 0,
         '@35': obj.events && obj.events.length > 0 ? getPoint(obj.events, 35 , 30) : 0,
         '@40': obj.events && obj.events.length > 0 ? getPoint(obj.events, 40, 35) : 0,
@@ -97,7 +99,9 @@ async function getAllLive(){
         const response = await fetch('/live');
         const data = await response.json();
         if (data.results && data.results.length > 0){
-            return data.results.filter(item => item.timer && Number(item.timer.tm) >=45 && Number(item.time_status) === 1 ).map(res => res.id);
+            return data.results.filter(item =>
+               // item.timer && Number(item.timer.tm) >=45 &&
+                Number(item.time_status) === 1 ).map(res => res.id);
         }
     }
     catch (err) {

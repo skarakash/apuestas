@@ -56,7 +56,7 @@ class AllByDate extends Component{
         this.setState({
             dbSpinner: true
         });
-        const promises = arr.map( async match => {
+         arr.map( async match => {
             const response = await fetch('/insert', {
                 method: 'POST',
                 body: JSON.stringify({match}),
@@ -103,7 +103,7 @@ class AllByDate extends Component{
 
 
     renderData(){
-        const {matches, date} = this.state;
+        const {matches} = this.state;
         let matchesToRender = matches.filter(match => match.events && match.events.length > 0);
        return matchesToRender.map(match => <div key={match.id}>{finalview(match)}</div>)
     }

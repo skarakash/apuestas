@@ -8,7 +8,8 @@ class Inplay extends Component {
         super();
         this.state = {
             ids: [],
-            matches: []
+            matches: [],
+            error: ''
         };
 
         this.getGames = this.getGames.bind(this);
@@ -25,7 +26,9 @@ class Inplay extends Component {
                 })
             }
         })
-        .catch(err => console.log(err));
+        .catch(error => {
+            this.setState({error})
+        });
 
     getGames = () => {
         const { ids } = this.state;
@@ -33,13 +36,16 @@ class Inplay extends Component {
             getAllById(this.state.ids)
                 .then(
                     data => {
-                        const matches = data.filter(game => game.time_status === '1').map(game => getGameData(game));
+                        console.log(data)
+                        const matches = data
+                            .filter(game => game.time_status === '1')
+                            .map(game => getGameData(game));
                         this.setState({
                             matches
                         })
                     }
                 )
-                .catch(err => console.log(err));
+                .catch(error => this.setState({error}));
         }
     };
 
@@ -58,7 +64,7 @@ class Inplay extends Component {
                 })
             }
         })
-        .catch(err => console.log(err));
+        .catch(error => this.setState({error}));
 
     calculateProbability  = (id, total)  => {
         const { matches } = this.state;
@@ -78,30 +84,37 @@ class Inplay extends Component {
                 const prob = over(data, total);
                 this.setState(state => {
                     const items = state.matches.map(match => {
-                        if (Number(match.id) === Number(id)){
+                        if (Number(match.id) === Number(id) && match.odds){
                             return Object.assign({}, match, {persentage: prob.probability, total})
                         } else {
                             return match
                         }
                     });
                     return state.matches = items;
-                }, () => console.log(this.state.matches))
+                })
             })
-            .catch(err => console.log(err));
+            .catch(error => {
+                this.setState({
+                    error
+                })
+            });
     };
+
+
 
 
     render(){
         const {ids, matches } = this.state;
         return <div className="container">
             <button className="btn btn-success" onClick={() => this.getIds()}>LIVE</button>
-            {ids.length > 0 && <button className="btn btn-info" onClick={() => this.getGames()}>Display live</button>}
-            { matches.length > 0 && matches.map(match => <div key={match.teams}>{match.teams} || {match.min >= 45 ? match['@45'] : null}  {match.min >= 50 ?  match['@50'] : null}  {match.min >= 55 ? match['@55']: null } --- TIME: {match.min}: {match.sec} ||
+            {ids.length > 0 && <button className="btn btn-info" onClick={() => this.getGames()}>Update</button>}
+            { matches.length > 0 && matches.map(match => <div key={match.teams}> {match.league}: {match.teams} || {match.min >= 45 ? match['@45'] : null}  {match.min >= 50 ?  match['@50'] : null}  || TIME: {match.min}: {match.sec} || SCORE: {match.score}
             {match.odds ? <span> Under: ~{match.odds.under_od}~   [ {match.odds.handicap} ]   Over: ~{match.odds.over_od}~</span>: null}
             <button className='btn btn-info' onClick={() => this.getMatchOdds(match.id)}>Get odds</button>
-                {match.min >=45 && <button className='btn btn-danger' onClick={()=> this.calculateProbability(match.id, match.odds.handicap)}>Calc</button>} {match.persentage ? Math.floor(match.persentage) : null}
+                {match.min >=45 && <button className='btn btn-danger' onClick={()=> match.odds ? this.calculateProbability(match.id, match.odds.handicap): () => {}}>Calc</button>} {match.persentage ? Math.floor(match.persentage) : null}
             </div>)
             }
+            {this.state.error.length > 0 && this.state.error}
         </div>
     }
 }

@@ -10,7 +10,6 @@ import './App.css';
 
 
 import ShowDataForm from './Components/ShowDataForm';
-import Home from './Components/Home';
 import AllByDate from './Components/AllByDate';
 import Inplay from './Components/Inplay';
 
