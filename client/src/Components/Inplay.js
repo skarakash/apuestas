@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { getAllLive, getAllById, getGameData, over } from '../utils';
-import { getOdds, fetchDataFromDB } from '../asyncUtils';
+import { getOdds, fetchDataFromDB, insertRows } from '../asyncUtils';
 
 
 class Inplay extends Component {
@@ -16,6 +16,7 @@ class Inplay extends Component {
         this.getIds = this.getIds.bind(this);
         this.getMatchOdds = this.getMatchOdds.bind(this);
         this.calculateProbability = this.calculateProbability.bind(this);
+        this.save = this.save.bind(this);
     }
 
     getIds = () => getAllLive()
@@ -30,13 +31,24 @@ class Inplay extends Component {
             this.setState({error})
         });
 
+
+    componentDidMount(){
+        // setInterval(() => {
+        //     console.log('checking');
+        //     this.getGames()
+        // },10000)
+    }
+
+    componentWillUnmount(){
+
+    }
+
     getGames = () => {
         const { ids } = this.state;
         if (ids.length > 0) {
             getAllById(this.state.ids)
                 .then(
                     data => {
-                        console.log(data)
                         const matches = data
                             .filter(game => game.time_status === '1')
                             .map(game => getGameData(game));
@@ -68,15 +80,12 @@ class Inplay extends Component {
 
     calculateProbability  = (id, total)  => {
         const { matches } = this.state;
-        let requestData;
+        let requestData = {};
 
         let match = matches.filter(item => item.id === id)[0];
-        if (match.min >= 45 && match.min <= 49) {
-            requestData = {'@45': match['@45']}
-        } else if (match.min >= 50 && match.min <= 54) {
+
+        if (match.min >= 47 && match.min <= 53) {
             requestData = {'@45': match['@45'], '@50': match['@50']}
-        } else {
-            requestData = {'@45': match['@45'], '@50': match['@50'],'@55': match['@55']}
         }
         fetchDataFromDB(requestData)
             .then(data => {
@@ -100,6 +109,20 @@ class Inplay extends Component {
             });
     };
 
+    save = match => {
+        const obj = {
+            league_name: match.league,
+            teams: match.teams,
+            match_id: match.id,
+            over_od: match.odds.over_od,
+            under_od: match.odds.under_od,
+            total: match.odds.handicap,
+            probab: match.persentage || 0
+        };
+        console.log(match);
+        insertRows(obj).catch(error => this.setState({error}))
+    };
+
 
 
 
@@ -112,6 +135,7 @@ class Inplay extends Component {
             {match.odds ? <span> Under: ~{match.odds.under_od}~   [ {match.odds.handicap} ]   Over: ~{match.odds.over_od}~</span>: null}
             <button className='btn btn-info' onClick={() => this.getMatchOdds(match.id)}>Get odds</button>
                 {match.min >=45 && <button className='btn btn-danger' onClick={()=> match.odds ? this.calculateProbability(match.id, match.odds.handicap): () => {}}>Calc</button>} {match.persentage ? Math.floor(match.persentage) : null}
+                <button onClick={() => this.save(match)}>Save</button>
             </div>)
             }
             {this.state.error.length > 0 && this.state.error}

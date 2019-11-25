@@ -100,7 +100,7 @@ async function getAllLive(){
         const data = await response.json();
         if (data.results && data.results.length > 0){
             return data.results.filter(item =>
-               // item.timer && Number(item.timer.tm) >=45 &&
+               // item.timer && Number(item.timer.tm) >=40 && Number(item.timer.tm) <=52 &&
                 Number(item.time_status) === 1 ).map(res => res.id);
         }
     }

@@ -5,7 +5,7 @@ const app = express();
 const port = 5000;
 
 const Match = require('./Models/Match');
-
+const Bet = require('./Models/Bet');
 
 
 app.use(express.json());
@@ -70,6 +70,17 @@ app.post('/insert', (req, res) => {
         .spread((match, created) => {
         console.log(created);
     }).then(match => {
+        res.json('ok');
+    }).catch(err => {
+        console.log(err);
+    })
+});
+
+app.post('/insertBet', (req, res) => {
+    Bet.findOrCreate({ where : req.body.obj})
+        .spread((match, created) => {
+            console.log(created);
+        }).then(match => {
         res.json('ok');
     }).catch(err => {
         console.log(err);

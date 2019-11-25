@@ -28,7 +28,18 @@ async function fetchDataFromDB(formData){
     }
 }
 
+
+async function insertRows(obj){
+        const response = await fetch('/insertBet', {
+            method: 'POST',
+            body: JSON.stringify({obj}),
+            headers: {"Content-Type": "application/json"}
+        });
+        return await response.json();
+}
+
 module.exports = {
     getOdds,
-    fetchDataFromDB
+    fetchDataFromDB,
+    insertRows
 };
