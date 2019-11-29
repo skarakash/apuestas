@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { under } from '../../utils';
+import { under } from '../../utils/utils';
 
 class Under extends Component {
     constructor(){

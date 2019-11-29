@@ -1,11 +1,10 @@
 const express = require('express');
-const request = require('request');
-const { token } = require('./config');
+
+const mongoose = require('mongoose');
+const routes = require('./routes/routs');
+
 const app = express();
 const port = 5000;
-
-const Match = require('./Models/Match');
-const Bet = require('./Models/Bet');
 
 
 app.use(express.json());
@@ -15,104 +14,17 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use('/', routes);
 
-app.get(`/home`, (req,res) => {
-	res.send('Home');
-});
-
-
-app.post('/allData', (req,res) => {
-    const requestData = req.body;
-    if (Object.getOwnPropertyNames(requestData).length > 0) {
-        Match.findAll({
-            where: requestData
-        }).then(result => {
-            res.json(result)
-        }).catch(error => res.send(`Error happened: ${error}`));
-    } else {
-        res.json([])
+mongoose.connect(
+    'mongodb+srv://skarakash:highbury@handballstats-rylsw.mongodb.net/test?retryWrites=true&w=majority',
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
     }
-});
-
-app.post('/byDate', (req,res) => {
-    const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.body.date}&league_id=${req.body.league_id}`;
-    if (req.body.date.length === 8){
-        request(
-            { url },
-            (error, response, body) => {
-                if (error || response.statusCode !== 200) {
-                    return res.status(500).json({ type: 'error', message: error });
-                }
-
-                res.json(JSON.parse(body));
-            }
-        )
-    } else {
-        res.json("Not valid date format")
-    }
-});
-
-app.post('/byId', (req,res) => {
-   const url = `https://api.betsapi.com/v1/event/view?token=${token}&event_id=${req.body.id}`;
-    request(
-        { url },
-        (error, response, body) => {
-            if (error || response.statusCode !== 200) {
-                return res.status(500).json({ type: 'error', message: error });
-            }
-            res.json(JSON.parse(body));
-        }
-    )
-});
-
-app.post('/insert', (req, res) => {
-    Match.findOrCreate({ where : req.body.match})
-        .spread((match, created) => {
-        console.log(created);
-    }).then(match => {
-        res.json('ok');
-    }).catch(err => {
-        console.log(err);
-    })
-});
-
-app.post('/insertBet', (req, res) => {
-    Bet.findOrCreate({ where : req.body.obj})
-        .spread((match, created) => {
-            console.log(created);
-        }).then(match => {
-        res.json('ok');
-    }).catch(err => {
-        console.log(err);
-    })
-});
-
-
-app.get('/live', (req,res) => {
-    const url = `https://api.betsapi.com/v1/events/inplay?sport_id=78&token=${token}`;
-    request(
-        { url },
-        (error, response, body) => {
-            if (error || response.statusCode !== 200) {
-                return res.status(500).json({ type: 'error', message: error });
-            }
-            res.json(JSON.parse(body));
-        }
-    )
-});
-
-app.post('/odds', (req,res) => {
-    const url = `https://api.betsapi.com/v2/event/odds?token=${token}&event_id=${req.body.id}&source=bet365&odds_market=3`;
-        request(
-            { url },
-            (error, response, body) => {
-                if (error || response.statusCode !== 200) {
-                    return res.status(500).json({ type: 'error', message: error });
-                }
-                res.json(JSON.parse(body));
-            }
-        )
-});
+)
+    .then(() => console.log('Mongo connected'))
+    .catch(err => console.log(err));
 
 app.listen(port, ()=> console.log(`running on ${port}`));
 

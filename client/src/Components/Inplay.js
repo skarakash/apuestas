@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getAllLive, getAllById, getGameData, over } from '../utils';
+import { getAllLive, getAllById, getGameData, over } from '../utils/utils';
 import { getOdds, fetchDataFromDB, insertRows } from '../asyncUtils';
 
 
@@ -51,7 +51,7 @@ class Inplay extends Component {
                     data => {
                         const matches = data
                             .filter(game => game.time_status === '1')
-                            .map(game => getGameData(game));
+                            .map(game => getGameData(game, 'bets'));
                         this.setState({
                             matches
                         })

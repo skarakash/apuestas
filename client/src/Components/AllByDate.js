@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { finalview, getGameData } from '../utils';
+import { finalview, getGameData } from '../utils/utils';
+import {transformMatchData} from '../utils/transformGameObj';
 
 class AllByDate extends Component{
     constructor(){
@@ -10,7 +11,8 @@ class AllByDate extends Component{
             matchesIds: [],
             matches:[],
             dbSpinner:  false,
-            allByIdSpinner: false
+            allByIdSpinner: false,
+            error: ''
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -35,7 +37,6 @@ class AllByDate extends Component{
     }
 
     async fetchData(date, league_id){
-
         try {
             const response = await fetch('/byDate', {
                 method: 'POST',
@@ -56,20 +57,16 @@ class AllByDate extends Component{
         this.setState({
             dbSpinner: true
         });
-         arr.map( async match => {
+        try {
             const response = await fetch('/insert', {
                 method: 'POST',
-                body: JSON.stringify({match}),
+                body: JSON.stringify(arr),
                 headers: {"Content-Type": "application/json"}
             });
-            this.setState({
-                dbSpinner: false,
-                matches: [],
-                matchesIds: []
-            });
             return await response.json();
-
-        });
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     async getAllById(arr){
@@ -85,7 +82,8 @@ class AllByDate extends Component{
             let data =  await response.json();
             return data.results[0];
         });
-        const res =  await Promise.all(promises);
+        let res =  await Promise.all(promises);
+        res = res.map(match => transformMatchData(match)).filter(match => match);
         this.setState({
             matches: res,
             allByIdSpinner: false
@@ -95,8 +93,17 @@ class AllByDate extends Component{
     insertMatches(){
         const { matches } = this.state;
         if (matches.length > 0) {
-          let data =  matches.map(match => getGameData(match)).filter(item => item['FT'] !== 0);
-          this.insertRows(data);
+          this.insertRows(matches)
+              .then(data => {
+                  this.setState({
+                      dbSpinner: false,
+                      matches: []
+                  })
+          }).catch(error => {
+              this.setState({
+                  error: JSON.stringify(error)
+              })
+          });
         }
     }
 
@@ -104,17 +111,23 @@ class AllByDate extends Component{
 
     renderData(){
         const {matches} = this.state;
-        let matchesToRender = matches.filter(match => match.events && match.events.length > 0);
-       return matchesToRender.map(match => <div key={match.id}>{finalview(match)}</div>)
+        return (
+            <div>{matches.length}</div>
+        )
     }
 
     getAllMatchesDetailsById(){
         const { matchesIds } = this.state;
-        this.getAllById(matchesIds);
+        this.getAllById(matchesIds)
+            .then( () => {
+                this.setState({
+                    allByIdSpinner: false
+                })
+            });
     }
 
     render(){
-        const { matchesIds, matches } = this.state;
+        const { matchesIds, matches, error } = this.state;
         return (
             <div className="container">
             <form className="container" onSubmit={this.handleSubmit}>
@@ -148,6 +161,7 @@ class AllByDate extends Component{
                 >
                     Insert in DB
                 </button>}
+                {error && <div>Error: {error}</div>}
             </div>
         )
     }

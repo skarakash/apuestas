@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { over } from '../../utils';
+import { over } from '../../utils/utils';
 
 class Over extends Component {
     constructor(){
