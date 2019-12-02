@@ -8,7 +8,7 @@ class ShowDataForm extends Component {
         super();
         this.state = {
             inputs: {
-                'HT':  0,
+                'event.30': 0,
                 'event.35': 0,
                 'event.40': 0,
                 'event.45': 0,
@@ -79,12 +79,12 @@ class ShowDataForm extends Component {
                     <input
                         type="number"
                         placeholder="@HT"
-                        onChange={e => this.setState({inputs : { ...this.state.inputs, 'HT': Number(e.target.value)}})}
+                        onChange={e => this.setState({inputs : { ...this.state.inputs, 'event.30': Number(e.target.value)}})}
                         disabled={this.state.buttons.buttonHT}
                         className="form-control"
                     />
                     <button
-                        onClick={(e) => this.handleClick('buttonHT', 'HT', e)}
+                        onClick={(e) => this.handleClick('buttonHT', 'event.30', e)}
                         className={`btn ${this.state.buttons.buttonHT ? 'btn-danger': 'btn-primary'}`}
                     >
                         { this.state.buttons.buttonHT ? 'Enable' : 'Disable' }

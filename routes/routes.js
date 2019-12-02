@@ -3,7 +3,7 @@ const router = express.Router();
 const Match = require('../Models/Match');
 const Bet = require('../Models/Bet');
 const request = require('request');
-const { token, bot_token } = require('../config');
+const { token } = require('../config');
 const Game = require('../Models/Game');
 
 
@@ -95,12 +95,8 @@ router.post('/insertBet', (req, res) => {
 
 
 router.post('/insert', async (req,res) => {
-    try {
-        const saved = await Game.insertMany(req.body);
-        res.json(saved)
-    } catch (e) {
-     res.sendStatus(500).json(e.message)
-    }
+    const saved = await Game.insertMany(req.body);
+    res.json(saved)
 });
 
 
@@ -115,12 +111,15 @@ router.post('/getdata', async (req,res) => {
 
 
 router.get('/getlast', async (req,res) => {
-    try {
-        const saved = await Game.find().sort({ _id: -1 }).limit(10);
-        res.json(saved)
-    } catch (e) {
-        res.sendStatus(500).json(e.message)
-    }
+    const query = Game.find().sort({ _id: -1 }).limit(10);
+    const promise = query.exec();
+    promise.then(data => {
+        return new Promise(resolve => {
+            let ids = data.map(match => match.time);
+            return resolve(ids);
+        }).then(data => res.json(data));
+    })
+        .catch(err => res.json(err));
 });
 
 module.exports = router;
