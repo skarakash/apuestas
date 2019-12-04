@@ -70,7 +70,7 @@ class ShowDataForm extends Component {
 
     render(){
         const { matches } = this.state;
-        const ftResults = matches.map(match => match['FT']).sort();
+        const ftResults = matches.map(match => (match.ft)).sort();
         return (
             <div className="container">
             <form onSubmit={this.handleSubmit}>
@@ -79,7 +79,7 @@ class ShowDataForm extends Component {
                     <input
                         type="number"
                         placeholder="@HT"
-                        onChange={e => this.setState({inputs : { ...this.state.inputs, 'event.30': Number(e.target.value)}})}
+                        onChange={e => this.setState({inputs : { ...this.state.inputs, 'events.30': Number(e.target.value)}})}
                         disabled={this.state.buttons.buttonHT}
                         className="form-control"
                     />

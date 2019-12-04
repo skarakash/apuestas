@@ -56,15 +56,25 @@ router.post('/byId', (req,res) => {
 
 router.get('/live', (req,res) => {
     const url = `https://api.betsapi.com/v1/events/inplay?sport_id=78&token=${token}`;
-    request(
-        { url },
-        (error, response, body) => {
+    const p = new Promise((resolve, reject) => {
+        request({url}, (error, response, body) => {
             if (error || response.statusCode !== 200) {
-                return res.status(500).json({ type: 'error', message: error });
+                return reject(error)
             }
-            res.json(JSON.parse(body));
+            try {
+                resolve(JSON.parse(body))
+            } catch (e) {
+                reject(e)
+            }
+        })
+    });
+
+    p.then(
+        data => {
+            let games = data.results.filter(game => Number(game.timer.tm) >= 40);
+            res.json(games);
         }
-    )
+    ).catch(err => res.json(err));
 });
 
 router.post('/odds', (req,res) => {

@@ -31,18 +31,6 @@ class Inplay extends Component {
             this.setState({error})
         });
 
-
-    componentDidMount(){
-        // setInterval(() => {
-        //     console.log('checking');
-        //     this.getGames()
-        // },10000)
-    }
-
-    componentWillUnmount(){
-
-    }
-
     getGames = () => {
         const { ids } = this.state;
         if (ids.length > 0) {

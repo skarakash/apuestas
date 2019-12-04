@@ -23,10 +23,11 @@ class Over extends Component {
         e.preventDefault();
         const {results} = this.props;
         const { value } = this.state;
+        debugger;
         if (value && results) {
             const res = over(results, value);
             this.setState({
-                finalRes: res
+                finalRes: res.probability
             })
         }
     }
