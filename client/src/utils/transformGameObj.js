@@ -4,10 +4,8 @@ const transformEvents = arr => {
             .map(event => event.text.split(" - "));
         if (events.length <= 15) {
             return []
-        } else {
-
         }
-          return events.filter(item => item.length === 3 && item[0] !== 'Half')
+        return events.filter(item => item.length === 3 && item[0] !== 'Half')
             .map(item => {
                 let obj = {};
                 obj.minute = parseInt(item[0]);
