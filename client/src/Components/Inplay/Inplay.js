@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { getAllLive, getAllById, getGameData, over } from '../utils/utils';
-import { getOdds, fetchDataFromDB, insertRows } from '../asyncUtils';
-
+import { getAllLive, over } from '../../utils/utils';
+import { getOdds,  insertRows, fetchDataFromDB} from '../../utils/asyncUtils';
+import getAllById from '../../utils/getGamesById';
+import InplayItem from './InplayItem';
 
 class Inplay extends Component {
     constructor(){
@@ -9,7 +10,8 @@ class Inplay extends Component {
         this.state = {
             ids: [],
             matches: [],
-            error: ''
+            error: '',
+            odds: []
         };
 
         this.getGames = this.getGames.bind(this);
@@ -27,6 +29,7 @@ class Inplay extends Component {
                 })
             }
         })
+        .then(() => this.getGames())
         .catch(error => {
             this.setState({error})
         });
@@ -37,11 +40,8 @@ class Inplay extends Component {
             getAllById(this.state.ids)
                 .then(
                     data => {
-                        const matches = data
-                            .filter(game => game.time_status === '1')
-                            .map(game => getGameData(game, 'bets'));
                         this.setState({
-                            matches
+                            matches: data
                         })
                     }
                 )
@@ -49,20 +49,11 @@ class Inplay extends Component {
         }
     };
 
-    getMatchOdds = (id) => getOdds(id)
+    getMatchOdds = (ids) => getOdds(ids)
         .then(data => {
-            if (data.results.odds) {
-                this.setState( state => {
-                    const items = state.matches.map(match => {
-                        if (Number(match.id) === Number(id)) {
-                            return Object.assign({}, match, {odds: data.results.odds['78_3'][0]})
-                        } else {
-                            return match
-                        }
-                    });
-                    return state.matches = items;
-                })
-            }
+            this.setState({
+                odds: data
+            })
         })
         .catch(error => this.setState({error}));
 
@@ -107,7 +98,6 @@ class Inplay extends Component {
             total: match.odds.handicap,
             probab: match.persentage || 0
         };
-        console.log(match);
         insertRows(obj).catch(error => this.setState({error}))
     };
 
@@ -115,17 +105,18 @@ class Inplay extends Component {
 
 
     render(){
-        const {ids, matches } = this.state;
+        const {ids, matches, odds } = this.state;
+        const divStyle = {
+            border: '1px solid grey',
+            padding: '0 5px'
+        };
+
+
         return <div className="container">
             <button className="btn btn-success" onClick={() => this.getIds()}>LIVE</button>
-            {ids.length > 0 && <button className="btn btn-info" onClick={() => this.getGames()}>Update</button>}
-            { matches.length > 0 && matches.map(match => <div key={match.teams}> {match.league}: {match.teams} || {match.min >= 45 ? match['@45'] : null}  {match.min >= 50 ?  match['@50'] : null}  || TIME: {match.min}: {match.sec} || SCORE: {match.score}
-            {match.odds ? <span> Under: ~{match.odds.under_od}~   [ {match.odds.handicap} ]   Over: ~{match.odds.over_od}~</span>: null}
-            <button className='btn btn-info' onClick={() => this.getMatchOdds(match.id)}>Get odds</button>
-                {match.min >=45 && <button className='btn btn-danger' onClick={()=> match.odds ? this.calculateProbability(match.id, match.odds.handicap): () => {}}>Calc</button>} {match.persentage ? Math.floor(match.persentage) : null}
-                <button onClick={() => this.save(match)}>Save</button>
-            </div>)
-            }
+            {ids.length > 0 && <button className='btn btn-info' onClick={() => this.getMatchOdds(ids)}>Get odds</button>}
+            <button className='btn btn-info' onClick={()=> this.setState({ids: []})}>Clear</button>
+            {matches.length > 0 && matches.map(match => match ? <div key={match.id} style={divStyle}><InplayItem match={match} odds={odds.filter(odd => odd.matchId === match.id)[0]}/></div> : null)}
             {this.state.error.length > 0 && this.state.error}
         </div>
     }

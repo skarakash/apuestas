@@ -13,23 +13,6 @@ class ShowDataForm extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    async fetchData(formData){
-        const dataEdited = removeFalsy(formData);
-        try {
-            const response = await fetch('/getdata', {
-                method: 'POST',
-                body: JSON.stringify(dataEdited),
-                headers: {"Content-Type": "application/json"}
-            });
-            const data = await response.json();
-            this.setState({
-                matches: data
-            });
-        }
-        catch (err) {
-            console.log('fetch failed', err);
-        }
-    }
 
     handleSubmit(e){
         e.preventDefault();

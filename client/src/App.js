@@ -11,7 +11,7 @@ import './App.css';
 
 import ShowDataForm from './Components/ShowDataForm';
 import AllByDate from './Components/AllByDate';
-import Inplay from './Components/Inplay';
+import Inplay from './Components/Inplay/Inplay';
 
 
 function App() {

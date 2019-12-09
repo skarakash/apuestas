@@ -99,7 +99,7 @@ const finalview = (dataObj) => {
 
 const over = (arr, n) => {
     const ok = arr.filter(item => item >= Number(n)).length;
-    return { probability : (ok * 100) / arr.length, total: n }
+    return  ok * 100 / arr.length
 };
 
 const under = (arr, n) => {
@@ -107,19 +107,6 @@ const under = (arr, n) => {
     return (ok * 100) / arr.length;
 };
 
-
- async function getAllById(arr){
-    const promises = arr.map( async id => {
-        const response = await fetch('/byId', {
-            method: 'POST',
-            body: JSON.stringify({id}),
-            headers: {"Content-Type": "application/json"}
-        });
-        let data =  await response.json();
-        return data.results[0];
-    });
-    return await Promise.all(promises);
-}
 
 
 async function getAllLive(){
@@ -140,6 +127,5 @@ module.exports = {
     finalview,
     getGameData,
     over, under,
-    getAllById,
     getAllLive
 };

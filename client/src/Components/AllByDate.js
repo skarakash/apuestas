@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { finalview, getGameData } from '../utils/utils';
 import {transformMatchData} from '../utils/transformGameObj';
+import getAllById from '../utils/getGamesById';
 
 class AllByDate extends Component{
     constructor(){
@@ -23,6 +24,7 @@ class AllByDate extends Component{
 
     handleSubmit(e){
         const { date, tournamentId } = this.state;
+
         e.preventDefault();
         if(date){
             this.fetchData(date, tournamentId);
@@ -69,27 +71,6 @@ class AllByDate extends Component{
         }
     }
 
-    async getAllById(arr){
-        this.setState({
-            allByIdSpinner: true
-        });
-        const promises = arr.map( async id => {
-            const response = await fetch('/byId', {
-                method: 'POST',
-                body: JSON.stringify({id}),
-                headers: {"Content-Type": "application/json"}
-            });
-            let data =  await response.json();
-            return data.results[0];
-        });
-        let res =  await Promise.all(promises);
-        res = res.map(match => transformMatchData(match)).filter(match => match);
-        this.setState({
-            matches: res,
-            allByIdSpinner: false
-        })
-    }
-
     insertMatches(){
         const { matches } = this.state;
         if (matches.length > 0) {
@@ -118,10 +99,11 @@ class AllByDate extends Component{
 
     getAllMatchesDetailsById(){
         const { matchesIds } = this.state;
-        this.getAllById(matchesIds)
-            .then( () => {
+        getAllById(matchesIds)
+            .then( data => {
                 this.setState({
-                    allByIdSpinner: false
+                    allByIdSpinner: false,
+                    matches: data
                 })
             });
     }
@@ -133,7 +115,7 @@ class AllByDate extends Component{
             <form className="container" onSubmit={this.handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="date">Enter date</label>
-                    <input type="number" className="form-control" id="date"
+                    <input type="text" className="form-control" id="date"
                            placeholder="Enter date" onChange={(e) => this.setState({ date: e.target.value })}/>
                 </div>
                 <div className="form-group">

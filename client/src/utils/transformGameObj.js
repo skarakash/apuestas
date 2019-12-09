@@ -79,6 +79,4 @@ const transformMatchData = obj => {
 };
 
 
-module.exports = {
-    transformMatchData
-};
+export default transformMatchData;

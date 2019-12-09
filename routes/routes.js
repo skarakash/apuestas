@@ -5,7 +5,7 @@ const Bet = require('../Models/Bet');
 const request = require('request');
 const { token } = require('../config');
 const Game = require('../Models/Game');
-
+const BetM = require('../Models/MongoBet');
 
 
 router.post('/allData', (req,res) => {
@@ -32,7 +32,6 @@ router.post('/byDate', (req,res) => {
                 if (error || response.statusCode !== 200) {
                     return res.status(500).json({ type: 'error', message: error });
                 }
-
                 res.json(JSON.parse(body));
             }
         )
@@ -47,6 +46,7 @@ router.post('/byId', (req,res) => {
         { url },
         (error, response, body) => {
             if (error || response.statusCode !== 200) {
+                console.log(error)
                 return res.status(500).json({ type: 'error', message: error });
             }
             res.json(JSON.parse(body));
@@ -71,7 +71,7 @@ router.get('/live', (req,res) => {
 
     p.then(
         data => {
-            let games = data.results.filter(game => Number(game.timer.tm) >= 40);
+            let games = data.results.filter(game => Number(game.timer.tm) >= 43);
             res.json(games);
         }
     ).catch(err => res.json(err));
@@ -79,34 +79,54 @@ router.get('/live', (req,res) => {
 
 router.post('/odds', (req,res) => {
     const url = `https://api.betsapi.com/v2/event/odds?token=${token}&event_id=${req.body.id}&source=bet365&odds_market=3`;
+    const p = new Promise((resolve, reject) => {
     request(
         { url },
         (error, response, body) => {
             if (error || response.statusCode !== 200) {
-                return res.status(500).json({ type: 'error', message: error });
+                res.json(reject(error))
             }
-            res.json(JSON.parse(body));
+            resolve(JSON.parse(body));
         }
     )
+    });
+
+    p.then(
+        data => {
+            let odds = data.results.odds['78_3'][0];
+            res.json(odds)
+        }
+    ).catch(err => res.json(err))
 });
-
-
-router.post('/insertBet', (req, res) => {
-    Bet.findOrCreate({ where : req.body.obj})
-        .spread((match, created) => {
-            console.log(created);
-        }).then(match => {
-        res.json('ok');
-    }).catch(err => {
-        res.json(err)
-    })
-});
-
 
 
 router.post('/insert', async (req,res) => {
     const saved = await Game.insertMany(req.body);
     res.json(saved)
+});
+
+router.post('/insertbet', async (req,res) => {
+    console.log(req.body);
+    const promise = BetM.create({
+        id: req.body.id,
+        teams: req.body.teams,
+        total: req.body.total,
+        '%': req.body['%'],
+        odds: req.body.odds,
+        added: req.body.added
+    });
+
+    promise.then(
+        data => {
+            console.log(data);
+            res.json(data)
+        }
+    )
+    .catch(err => {
+        console.log(err);
+        res.json(err)
+    })
+
 });
 
 
@@ -125,7 +145,11 @@ router.get('/getlast', async (req,res) => {
     const promise = query.exec();
     promise.then(data => {
         return new Promise(resolve => {
-            let ids = data.map(match => match.time);
+            let ids = data.map(match => {
+                return {
+                    time: match.time, league: match.league.name, leagueId: match.league.id
+                }
+            });
             return resolve(ids);
         }).then(data => res.json(data));
     })
