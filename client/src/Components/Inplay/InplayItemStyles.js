@@ -15,7 +15,8 @@ const scoreStyles = {
 
 const buttonStyles = {
     marginRight: 50,
-
+    width: 40,
+    overflow: 'hidden'
 };
 
 const oddsStyles = {

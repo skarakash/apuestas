@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { finalview, getGameData } from '../utils/utils';
 import {transformMatchData} from '../utils/transformGameObj';
 import getAllById from '../utils/getGamesById';
 
@@ -7,7 +6,7 @@ class AllByDate extends Component{
     constructor(){
         super();
         this.state = {
-            date: null,
+            dates: null,
             tournamentId: null,
             matchesIds: [],
             matches:[],
@@ -23,37 +22,41 @@ class AllByDate extends Component{
     }
 
     handleSubmit(e){
-        const { date, tournamentId } = this.state;
-
+        const { dates, tournamentId } = this.state;
         e.preventDefault();
-        if(date){
-            this.fetchData(date, tournamentId);
+        if(dates){
+            let datesSet = dates.split(',').map(item => item.trim());
+            this.fetchData(datesSet, tournamentId)
+                .then( data => {
+                    let matchesIds = [].concat.apply([], data);
+                    this.setState({matchesIds})
+                })
+                .catch(err => console.log(err));
         }
     }
 
-    handleChange(e, name){
+    handleChange(e, name) {
         e.preventDefault();
         this.setState({
            [name]: e.target.value
         });
     }
 
-    async fetchData(date, league_id){
-        try {
+    async fetchData(datesSet, tournamentId){
+        const promises = datesSet.map( async (date) => {
             const response = await fetch('/byDate', {
                 method: 'POST',
-                body: JSON.stringify({date, league_id}),
+                body: JSON.stringify({date, tournamentId}),
                 headers: {"Content-Type": "application/json"}
             });
             let data = await response.json();
-            data = data.results.map(match => match.id);
-            this.setState({
-                matchesIds: data
-            })
-        } catch (e) {
-            console.log(`Error happened: ${e}`)
-        }
+            return data.results.map(match => match.id);
+        });
+
+        return await Promise.all(promises);
     }
+
+    // 20181103, 20181102
 
     async insertRows(arr){
         this.setState({
@@ -116,7 +119,7 @@ class AllByDate extends Component{
                 <div className="form-group">
                     <label htmlFor="date">Enter date</label>
                     <input type="text" className="form-control" id="date"
-                           placeholder="Enter date" onChange={(e) => this.setState({ date: e.target.value })}/>
+                           placeholder="Enter date" onChange={(e) => this.setState({ dates: e.target.value })}/>
                 </div>
                 <div className="form-group">
                     <label htmlFor="tournament">Tournament ID</label>

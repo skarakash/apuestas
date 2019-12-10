@@ -17,11 +17,16 @@ class InplayItem extends Component{
         super();
         this.state ={
             probability: null,
+            lxbet: null,
+            lxbetCurrent: null,
+            probabilityCurrent: null,
             generated: [],
             errors: []
         };
         this.calculate = this.calculate.bind(this);
         this.saveToDB = this.saveToDB.bind(this);
+        this.getCurrent = this.getCurrent.bind(this);
+        this.calculateWithCurrent = this.calculateWithCurrent.bind(this);
     }
 
     calculate = (eventsArr, handicap) => {
@@ -30,7 +35,20 @@ class InplayItem extends Component{
             .then(data => {
                 let results = data.map(item => item.ft).sort();
                 let probability =  over(results, Number(handicap));
-                this.setState({probability}) ;
+                let lxbet = over(results, Number(handicap) - 1);
+                this.setState({probability, lxbet}) ;
+            });
+    };
+
+    calculateWithCurrent = (currentMin, events, handicap) => {
+        const key = 'events.' + currentMin;
+        const data = { [key]: events[String(currentMin)] };
+        findSimilar(data)
+            .then(data => {
+                let results = data.map(item => item.ft).sort();
+                let probabilityCurrent =  over(results, Number(handicap));
+                let lxbetCurrent = over(results, Number(handicap) - 1);
+                this.setState({probabilityCurrent, lxbetCurrent}) ;
             });
     };
 
@@ -52,10 +70,18 @@ class InplayItem extends Component{
         })
     };
 
+    getCurrent = () => {
+        const { match, odds } = this.props;
+        const { handicap } = odds;
+        const { events } = match;
+        let currentMin =  Math.max(...Object.keys(events));
+        this.calculateWithCurrent(currentMin, events, handicap)
+    };
+
     render(){
         const { match, odds } = this.props;
         const { events } = match;
-        const {probability, generated} = this.state;
+        const {probability, generated, lxbet, lxbetCurrent} = this.state;
         return(
             <div>
                 <div style={teamsStyles}>{match.home.name}  [{match.ss}]  {match.away.name}</div>
@@ -84,9 +110,10 @@ class InplayItem extends Component{
                 <span
                     style={probability && probability >= 70 ? probabilityStylesHigh : probabilityStyles}
                 >
-                    {probability ? `${Math.floor(probability)}%` :  null}
+                    {probability ? `${Math.floor(probability)}%` :  null} {lxbet ? `(${Math.floor(lxbet)}%)` : null}
                 </span>
                 <button onClick={() => this.saveToDB()}>Save</button>
+                <button onClick={() => this.getCurrent()}>{odds && lxbetCurrent ? Math.round(lxbetCurrent) : 'NO DATA'}</button>
                 {generated.length > 0 && generated.map(item => <div key={item}>{item}</div>)}
             </div>
         )

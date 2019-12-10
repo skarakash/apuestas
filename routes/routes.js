@@ -24,7 +24,8 @@ router.post('/allData', (req,res) => {
 
 
 router.post('/byDate', (req,res) => {
-    const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.body.date}&league_id=${req.body.league_id}`;
+    const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.body.date}&league_id=${req.body.tournamentId}`;
+    console.log(req.body);
     if (req.body.date.length === 8){
         request(
             { url },
@@ -46,7 +47,7 @@ router.post('/byId', (req,res) => {
         { url },
         (error, response, body) => {
             if (error || response.statusCode !== 200) {
-                console.log(error)
+                console.log(error);
                 return res.status(500).json({ type: 'error', message: error });
             }
             res.json(JSON.parse(body));
@@ -118,7 +119,6 @@ router.post('/insertbet', async (req,res) => {
 
     promise.then(
         data => {
-            console.log(data);
             res.json(data)
         }
     )
