@@ -10,7 +10,7 @@ import './App.css';
 
 
 import ShowDataForm from './Components/ShowDataForm';
-import AllByDate from './Components/AllByDate';
+import EndedEvents from './Components/EndedEvents';
 import Inplay from './Components/Inplay/Inplay';
 
 
@@ -37,7 +37,7 @@ function App() {
                       <ShowDataForm />
                   </Route>
                   <Route path="/byDate">
-                      <AllByDate />
+                      <EndedEvents />
                   </Route>
                   <Route path="/inplay">
                       <Inplay />

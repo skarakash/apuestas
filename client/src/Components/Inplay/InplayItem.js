@@ -17,44 +17,18 @@ class InplayItem extends Component{
         super();
         this.state ={
             probability: null,
-            lxbet: null,
-            lxbetCurrent: null,
-            probabilityCurrent: null,
             generated: [],
-            errors: []
+            errors: [],
+            requestOn: false,
         };
-        this.calculate = this.calculate.bind(this);
         this.saveToDB = this.saveToDB.bind(this);
-        this.getCurrent = this.getCurrent.bind(this);
-        this.calculateWithCurrent = this.calculateWithCurrent.bind(this);
     }
 
-    calculate = (eventsArr, handicap) => {
-        const data = { 'events.45': eventsArr['45'], 'events.50': eventsArr['50'] };
-        findSimilar(data)
-            .then(data => {
-                let results = data.map(item => item.ft).sort();
-                let probability =  over(results, Number(handicap));
-                let lxbet = over(results, Number(handicap) - 1);
-                this.setState({probability, lxbet}) ;
-            });
-    };
-
-    calculateWithCurrent = (currentMin, events, handicap) => {
-        const key = 'events.' + currentMin;
-        const data = { [key]: events[String(currentMin)] };
-        findSimilar(data)
-            .then(data => {
-                let results = data.map(item => item.ft).sort();
-                let probabilityCurrent =  over(results, Number(handicap));
-                let lxbetCurrent = over(results, Number(handicap) - 1);
-                this.setState({probabilityCurrent, lxbetCurrent}) ;
-            });
-    };
 
     saveToDB =() => {
         const { probability } = this.state;
         const { match, odds } = this.props;
+        this.setState({requestOn: true});
         const bet = {};
         bet['id'] = match.id;
         bet['teams'] = `${match.home.name} - ${match.away.name}`;
@@ -63,31 +37,22 @@ class InplayItem extends Component{
         bet['odds'] = Number(odds.over_od);
         bet['added'] = new Date().toLocaleDateString();
         bet['result'] = 'null';
-        insertbet(bet).then().catch(err => {
+        insertbet(bet).then(() => this.setState({requestOn: false})).catch(err => {
             this.setState({
                 errors: this.state.errors.push(err)
             })
         })
     };
 
-    getCurrent = () => {
-        const { match, odds } = this.props;
-        const { handicap } = odds;
-        const { events } = match;
-        let currentMin =  Math.max(...Object.keys(events));
-        this.calculateWithCurrent(currentMin, events, handicap)
-    };
-
     render(){
         const { match, odds } = this.props;
-        const { events } = match;
-        const {probability, generated, lxbet, lxbetCurrent} = this.state;
+        const {probability, generated} = this.state;
         return(
             <div>
                 <div style={teamsStyles}>{match.home.name}  [{match.ss}]  {match.away.name}</div>
                 { match.timer &&
-                odds !== undefined && Number(match.timer.tm) >= 50 && Number(match.timer.tm) <= 55 &&
-                <button style={buttonStyles} onClick={() => this.calculate(events, odds.handicap)}>Calculate</button>
+                odds !== undefined && Number(match.timer.tm) >= 47 && Number(match.timer.tm) <= 55 &&
+                <button style={buttonStyles} onClick={() => {}}>Get %</button>
                 }
                 { odds &&
                 <div style={oddsStyles}>
@@ -95,14 +60,14 @@ class InplayItem extends Component{
                         style={oddButton}
                         onClick={() => this.setState({ generated: this.state.generated.concat([`${match.league.name}, ${match.home.name} - ${match.away.name}, over ${odds.handicap}@${odds.over_od} [bet365] ${probability}%`])})}
                     >
-                        {odds.over_od}
+                        {odds.over_od ? odds.over_od : '0.00'}
                         </button>
                     <span>{odds.handicap}</span>
                     <button
                         style={oddButton}
                         onClick={() => this.setState({ generated: this.state.generated.concat([`${match.league.name}, ${match.home.name} - ${match.away.name}, under ${odds.handicap}@${odds.under_od} [bet365]`])})}
                     >
-                        {odds.under_od}
+                        {odds.under_od ? odds.under_od : '0.00'}
                     </button>
                 </div>
                 }
@@ -113,7 +78,6 @@ class InplayItem extends Component{
                     {probability ? `${Math.floor(probability)}%` :  null} {lxbet ? `(${Math.floor(lxbet)}%)` : null}
                 </span>
                 <button onClick={() => this.saveToDB()}>Save</button>
-                <button onClick={() => this.getCurrent()}>{odds && lxbetCurrent ? Math.round(lxbetCurrent) : 'NO DATA'}</button>
                 {generated.length > 0 && generated.map(item => <div key={item}>{item}</div>)}
             </div>
         )

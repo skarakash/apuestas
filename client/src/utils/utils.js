@@ -111,7 +111,7 @@ const under = (arr, n) => {
 
 async function getAllLive(){
     try {
-        const response = await fetch('/live');
+        const response = await fetch('/inplayevents');
         const data = await response.json();
         if (data && data.length > 0){
             return data.filter(item => Number(item.time_status) === 1).map(res => res.id);

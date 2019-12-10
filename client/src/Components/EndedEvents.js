@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import {transformMatchData} from '../utils/transformGameObj';
 import getAllById from '../utils/getGamesById';
 
-class AllByDate extends Component{
+class EndedEvents extends Component{
     constructor(){
         super();
         this.state = {
@@ -44,7 +43,7 @@ class AllByDate extends Component{
 
     async fetchData(datesSet, tournamentId){
         const promises = datesSet.map( async (date) => {
-            const response = await fetch('/byDate', {
+            const response = await fetch('/eventsended', {
                 method: 'POST',
                 body: JSON.stringify({date, tournamentId}),
                 headers: {"Content-Type": "application/json"}
@@ -55,8 +54,6 @@ class AllByDate extends Component{
 
         return await Promise.all(promises);
     }
-
-    // 20181103, 20181102
 
     async insertRows(arr){
         this.setState({
@@ -152,4 +149,4 @@ class AllByDate extends Component{
     }
 }
 
-export default AllByDate;
+export default EndedEvents;
