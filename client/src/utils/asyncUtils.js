@@ -15,12 +15,17 @@ async function getOdds(ids){
 
 
 async function insertbet(obj){
+    try {
         const response = await fetch('/insertbet', {
             method: 'POST',
             body: JSON.stringify(obj),
             headers: {"Content-Type": "application/json"}
         });
         return await response.json();
+    }
+    catch (err) {
+        console.log('fetch failed', err);
+    }
 }
 
 async function findSimilar(data){
@@ -37,9 +42,23 @@ async function findSimilar(data){
     }
 }
 
+async function getAllLive(){
+    try {
+        const response = await fetch('/inplayevents');
+        const data = await response.json();
+        if (data && data.length > 0){
+            return data.filter(item => Number(item.time_status) === 1).map(res => res.id);
+        }
+    }
+    catch (err) {
+        console.log('fetch failed', err);
+    }
+}
+
 
 module.exports = {
     getOdds,
     insertbet,
-    findSimilar
+    findSimilar,
+    getAllLive
 };

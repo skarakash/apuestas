@@ -1,5 +1,5 @@
 const transformEvents = arr => {
-    if (arr.length > 0) {
+    if (arr && arr.length > 0) {
         let events =  arr.filter(item => item.text)
             .map(event => event.text.split(" - "));
         if (events.length <= 15) {
@@ -58,6 +58,8 @@ const transformMatchData = obj => {
         for (let i = 1; i <= events[events.length -1]['minute']; i++) {
             tempObj[i] = null;
         }
+
+        obj.stats["last_10_mins_score"] = obj.stats["last_10_mins_score"].map(score => Number(score));
 
         for(let prop in tempObj){
             events.map(item => {

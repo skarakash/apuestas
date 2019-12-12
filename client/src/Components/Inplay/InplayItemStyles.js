@@ -14,14 +14,14 @@ const scoreStyles = {
 };
 
 const buttonStyles = {
-    marginRight: 50,
-    width: 40,
+    // marginRight: 50,
+    // width: 40,
     overflow: 'hidden'
 };
 
 const oddsStyles = {
     display: 'inline-block',
-    marginRight: 25
+    // marginRight: 25
 };
 
 const oddButton = {
@@ -43,6 +43,12 @@ const probabilityStylesHigh = {
     color: 'white'
 };
 
+
+const pStylesHigh ={
+    backgroundColor: 'green',
+    color: 'white'
+};
+
 module.exports = {
     teamsStyles,
     scoreStyles,
@@ -50,5 +56,6 @@ module.exports = {
     oddsStyles,
     oddButton,
     probabilityStyles,
-    probabilityStylesHigh
+    probabilityStylesHigh,
+    pStylesHigh
 };

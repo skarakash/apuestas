@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { getAllLive, over } from '../../utils/utils';
-import { getOdds,  insertRows, fetchDataFromDB} from '../../utils/asyncUtils';
+import { getOdds,  getAllLive, insertRows, fetchDataFromDB} from '../../utils/asyncUtils';
 import getAllById from '../../utils/getGamesById';
 import InplayItem from './InplayItem';
 
@@ -17,7 +16,6 @@ class Inplay extends Component {
         this.getGames = this.getGames.bind(this);
         this.getIds = this.getIds.bind(this);
         this.getMatchOdds = this.getMatchOdds.bind(this);
-        this.calculateProbability = this.calculateProbability.bind(this);
         this.save = this.save.bind(this);
     }
 
@@ -30,6 +28,11 @@ class Inplay extends Component {
             }
         })
         .then(() => this.getGames())
+        .then(() => {
+            if (this.state.ids.length > 0){
+                this.getMatchOdds(this.state.ids)
+            }
+        })
         .catch(error => {
             this.setState({error})
         });
@@ -56,37 +59,6 @@ class Inplay extends Component {
             })
         })
         .catch(error => this.setState({error}));
-
-    calculateProbability  = (id, total)  => {
-        const { matches } = this.state;
-        let requestData = {};
-
-        let match = matches.filter(item => item.id === id)[0];
-
-        if (match.min >= 47 && match.min <= 53) {
-            requestData = {'@45': match['@45'], '@50': match['@50']}
-        }
-        fetchDataFromDB(requestData)
-            .then(data => {
-                data = data.map(item => item['FT']);
-                const prob = over(data, total);
-                this.setState(state => {
-                    const items = state.matches.map(match => {
-                        if (Number(match.id) === Number(id) && match.odds){
-                            return Object.assign({}, match, {persentage: prob.probability, total})
-                        } else {
-                            return match
-                        }
-                    });
-                    return state.matches = items;
-                })
-            })
-            .catch(error => {
-                this.setState({
-                    error
-                })
-            });
-    };
 
     save = match => {
         const obj = {

@@ -5,24 +5,38 @@ import {
     buttonStyles,
     oddsStyles,
     oddButton,
-    probabilityStyles,
-    probabilityStylesHigh
+    pStylesHigh
 } from './InplayItemStyles'
 
 import { findSimilar,insertbet } from '../../utils/asyncUtils';
-import { over } from '../../utils/utils';
 
 class InplayItem extends Component{
     constructor(){
         super();
         this.state ={
-            probability: null,
+            probability: {},
             generated: [],
             errors: [],
             requestOn: false,
         };
         this.saveToDB = this.saveToDB.bind(this);
+        // this.getOutcomeProb = this.getOutcomeProb.bind(this);
     }
+
+    getOutcomeProb = () => {
+        const { odds } = this.props;
+        const { ss, time_str } = odds;
+        let score = ss.split("-").map(a => Number(a)).reduce((a,b) => a+b);
+        let min = Number(time_str.split(":")[0]);
+        const data = {
+            "total": Number(odds.handicap),
+            "event_min": "events." + min,
+            "scored": score
+        };
+        findSimilar(data)
+            .then(data => this.setState({probability: data}))
+            .catch(error => {this.setState({errors: this.state.errors.concat(error)})})
+    };
 
 
     saveToDB =() => {
@@ -51,9 +65,10 @@ class InplayItem extends Component{
             <div>
                 <div style={teamsStyles}>{match.home.name}  [{match.ss}]  {match.away.name}</div>
                 { match.timer &&
-                odds !== undefined && Number(match.timer.tm) >= 47 && Number(match.timer.tm) <= 55 &&
-                <button style={buttonStyles} onClick={() => {}}>Get %</button>
+                odds !== undefined && Number(match.timer.tm) >= 39 && Number(match.timer.tm) <= 55 &&
+                <button style={buttonStyles} onClick={() => this.getOutcomeProb()}>{probability.all? probability.all: 'Get %'}</button>
                 }
+                { Object.keys(probability).filter(key => key !== 'all').map(key => <span key={key}>{`${key}:[${probability[key]}] ` }</span>) }
                 { odds &&
                 <div style={oddsStyles}>
                     <button
@@ -72,11 +87,6 @@ class InplayItem extends Component{
                 </div>
                 }
                 <div style={scoreStyles}>{match.timer ? match.timer.tm : null} : {match.timer ? match.timer.ts : null}</div>
-                <span
-                    style={probability && probability >= 70 ? probabilityStylesHigh : probabilityStyles}
-                >
-                    {probability ? `${Math.floor(probability)}%` :  null} {lxbet ? `(${Math.floor(lxbet)}%)` : null}
-                </span>
                 <button onClick={() => this.saveToDB()}>Save</button>
                 {generated.length > 0 && generated.map(item => <div key={item}>{item}</div>)}
             </div>

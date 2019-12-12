@@ -62,10 +62,10 @@ router.get('/inplayevents', (req,res) => {
             }
         })
     });
-
+// 20181103,20181104,20181107,20181109,20181109,20181111,20181112,20181114,20181115
     p.then(
         data => {
-            let games = data.results.filter(game => Number(game.timer.tm) >= 47);
+            let games = data.results.filter(game => Number(game.timer.tm) >= 43);
             res.json(games);
         }
     ).catch(err => {
@@ -149,11 +149,32 @@ router.get('/getlast', async (req,res) => {
 });
 
 router.post('/probability', async (req, res) => {
-    const totalGames = await Game.find({ "events.30": {$eq: 22}}).count();
-    const totalGamesOver = await Game.find({$and: [{ "events.30": {$eq: 22}}, {"ft": {$gte: 43.5}}]}).count();
-    const totalGamesUnder = await Game.find({$and: [{ "events.30": {$eq: 22}}, {"ft": {$lte: 43.5}}]}).count();
-    const result = await Promise.all([totalGames, totalGamesOver, totalGamesUnder]);
-    res.json(result)
+    const bookieTotal = req.body.total;
+    console.log(bookieTotal);
+    const totalGames = await Game.count()
+        .where(req.body.event_min, req.body.scored);
+    const total7 = await Game.count()
+        .where(req.body.event_min, req.body.scored)
+        .where('ft').gte(req.body.total - 3);
+    const total8 = await Game.count()
+        .where(req.body.event_min, req.body.scored)
+        .where('ft').gte(req.body.total - 2);
+    const total9 = await Game.count()
+        .where(req.body.event_min, req.body.scored)
+        .where('ft').gte(req.body.total - 1);
+    const equalTotal = await Game.count()
+        .where(req.body.event_min, req.body.scored)
+        .where('ft').gte(req.body.total);
+    const result = await Promise.all([totalGames, equalTotal,  total9, total8, total7]);
+    const [ total, evens, oneLess, twoLess, threeLess ] = result;
+    const  data = {
+        'all': totalGames,
+        [bookieTotal]: `${Math.round((evens * 100) / total)}%`,
+        [bookieTotal - 1]: `${Math.round((oneLess * 100) / total)}%`,
+        [bookieTotal - 2]: `${Math.round((twoLess * 100) / total)}%`,
+        [bookieTotal - 3]: `${Math.round((threeLess * 100) / total)}%`,
+    };
+    res.json(data)
 });
 
 module.exports = router;
