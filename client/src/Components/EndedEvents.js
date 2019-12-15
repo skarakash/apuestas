@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import getAllById from '../utils/getGamesById';
+import { insertRows } from '../utils/asyncUtils'
 
 class EndedEvents extends Component{
     constructor(){
@@ -23,6 +24,7 @@ class EndedEvents extends Component{
     handleSubmit(e){
         const { dates, tournamentId } = this.state;
         e.preventDefault();
+        this.setState({error: null});
         if(dates){
             let datesSet = dates.split(',').map(item => item.trim());
             this.fetchData(datesSet, tournamentId)
@@ -55,34 +57,24 @@ class EndedEvents extends Component{
         return await Promise.all(promises);
     }
 
-    async insertRows(arr){
-        this.setState({
-            dbSpinner: true
-        });
-        try {
-            const response = await fetch('/insert', {
-                method: 'POST',
-                body: JSON.stringify(arr),
-                headers: {"Content-Type": "application/json"}
-            });
-            return await response.json();
-        } catch (e) {
-            console.log(e)
-        }
-    }
+
 
     insertMatches(){
         const { matches } = this.state;
         if (matches.length > 0) {
-          this.insertRows(matches)
+          insertRows(matches)
               .then(data => {
-                  this.setState({
-                      dbSpinner: false,
-                      matches: []
-                  })
+                    if(data.errors) {
+                        throw new Error(data.message)
+                    } else {
+                        this.setState({
+                            dbSpinner: false,
+                            matches: []
+                        })
+                    }
           }).catch(error => {
               this.setState({
-                  error: JSON.stringify(error)
+                  error: JSON.stringify(error.message)
               })
           });
         }

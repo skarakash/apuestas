@@ -57,7 +57,17 @@ const GameSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-});
+}, { emitIndexErrors: true });
+
+const handleE11000 = function(error, res, next) {
+    if (error.name === 'MongoError' && error.code === 11000) {
+        next(new Error('There was a duplicate key error'));
+    } else {
+        next();
+    }
+};
+
+GameSchema.post('insertMany', handleE11000);
 
 GameSchema.plugin(uniqueValidator);
 

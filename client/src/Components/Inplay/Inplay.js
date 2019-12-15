@@ -87,7 +87,7 @@ class Inplay extends Component {
         return <div className="container">
             <button className="btn btn-success" onClick={() => this.getIds()}>LIVE</button>
             {ids.length > 0 && <button className='btn btn-info' onClick={() => this.getMatchOdds(ids)}>Get odds</button>}
-            <button className='btn btn-info' onClick={()=> this.setState({ids: []})}>Clear</button>
+            <button className='btn btn-info' onClick={()=> this.setState({ids: [], matches: [], odds: []})}>Clear</button>
             {matches.length > 0 && matches.map(match => match ? <div key={match.id} style={divStyle}><InplayItem match={match} odds={odds.filter(odd => odd.matchId === match.id)[0]}/></div> : null)}
             {this.state.error.length > 0 && this.state.error}
         </div>

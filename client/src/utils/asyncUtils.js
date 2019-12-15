@@ -24,7 +24,7 @@ async function insertbet(obj){
         return await response.json();
     }
     catch (err) {
-        console.log('fetch failed', err);
+        return (`fetch failed  ${err}`);
     }
 }
 
@@ -38,7 +38,7 @@ async function findSimilar(data){
         return await response.json();
     }
     catch (err) {
-        console.log('fetch failed', err);
+        return (`fetch failed  ${err}`);
     }
 }
 
@@ -51,7 +51,20 @@ async function getAllLive(){
         }
     }
     catch (err) {
-        console.log('fetch failed', err);
+        return (`fetch failed  ${err}`);
+    }
+}
+
+async function insertRows(arr){
+    const response = await fetch('/insert', {
+        method: 'POST',
+        body: JSON.stringify(arr),
+        headers: {"Content-Type": "application/json"}
+    });
+    if(response.ok) {
+        return await response.json();
+    } else {
+        return response;
     }
 }
 
@@ -60,5 +73,6 @@ module.exports = {
     getOdds,
     insertbet,
     findSimilar,
-    getAllLive
+    getAllLive,
+    insertRows
 };

@@ -24,14 +24,13 @@ class InplayItem extends Component{
     }
 
     getOutcomeProb = () => {
-        const { odds } = this.props;
-        const { ss, time_str } = odds;
-        let score = ss.split("-").map(a => Number(a)).reduce((a,b) => a+b);
-        let min = Number(time_str.split(":")[0]);
+        const { odds, match } = this.props;
+        const {events} = match;
         const data = {
             "total": Number(odds.handicap),
-            "event_min": "events." + min,
-            "scored": score
+            "events.39": events['39'],
+            "events.43": events['43'],
+            "events.47": events['47']
         };
         findSimilar(data)
             .then(data => this.setState({probability: data}))
@@ -65,10 +64,10 @@ class InplayItem extends Component{
             <div>
                 <div style={teamsStyles}>{match.home.name}  [{match.ss}]  {match.away.name}</div>
                 { match.timer &&
-                odds !== undefined && Number(match.timer.tm) >= 39 && Number(match.timer.tm) <= 55 &&
-                <button style={buttonStyles} onClick={() => this.getOutcomeProb()}>{probability.all? probability.all: 'Get %'}</button>
+                odds !== undefined && Number(match.timer.tm) >= 45 && Number(match.timer.tm) <= 55 &&
+                <button style={buttonStyles} onClick={() => this.getOutcomeProb()}>{probability.total ? probability.total: 'Get %'}</button>
                 }
-                { Object.keys(probability).filter(key => key !== 'all').map(key => <span key={key}>{`${key}:[${probability[key]}] ` }</span>) }
+                { Object.keys(probability).filter(key => key !== 'total').map(key => <span key={key}>{`${key}:[${probability[key]}] ` }</span>) }
                 { odds &&
                 <div style={oddsStyles}>
                     <button
