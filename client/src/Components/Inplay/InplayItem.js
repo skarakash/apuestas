@@ -20,7 +20,6 @@ class InplayItem extends Component{
             requestOn: false,
         };
         this.saveToDB = this.saveToDB.bind(this);
-        // this.getOutcomeProb = this.getOutcomeProb.bind(this);
     }
 
     getOutcomeProb = () => {
@@ -28,9 +27,9 @@ class InplayItem extends Component{
         const {events} = match;
         const data = {
             "total": Number(odds.handicap),
-            "events.39": events['39'],
-            "events.43": events['43'],
-            "events.47": events['47']
+            "events.40": events['40'],
+            "events.44": events['44'],
+            "events.48": events['48']
         };
         findSimilar(data)
             .then(data => this.setState({probability: data}))

@@ -155,28 +155,21 @@ router.get('/getlast', async (req,res) => {
 });
 
 router.post('/probability', async (req, res) => {
-    const { total, low, middle, up } = req.body;
     try {
-        const totalOver = await Game.count({
-            'events.39': low,
-            'events.43': middle,
-            'events.47': up,
-            'events.50': 45,
-            ft: { $gt: total}
-        });
-        const totalUnder = await Game.count({
-            'events.39': low,
-            'events.43': middle,
-            'events.47': up,
-            ft: { $lt: total}
-        });
-        const result = await Promise.all([totalOver,totalUnder]);
-        const [over, under] = result;
-
-        res.json({over, under, total})
-    }catch (e) {
+        const total = req.body.total;
+        const events39 = req.body['events.40'];
+        const events43 = req.body['events.44'];
+        const events47 = req.body['events.48'];
+        console.log(total, events39,events43,events47);
+        const lessThan = await Game.count({"$and": [{"events.40": events39},{"events.44" : events43}, {"events.48" :events47}, {"ft":{ "$lt" : total}}]});
+        const greaterThan = await Game.count({"$and": [{"events.40": events39},{"events.44" : events43}, {"events.48" :events47}, {"ft":{ "$gt" : total}}]});
+        const result = await Promise.all([lessThan, greaterThan]);
+        let [under, over] = result;
+        res.json({under, over, total})
+    } catch (e) {
         res.json(e)
     }
+
 
 });
 
