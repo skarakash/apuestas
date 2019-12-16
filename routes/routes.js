@@ -103,14 +103,12 @@ router.post('/eventodds', (req,res) => {
 
 router.post('/insert', async (req, res) => {
     const data = req.body;
-    Game.insertMany(data)
-        .then(res => {
-            res.sendStatus(200).send('Inserted successfully')
-        })
-        .catch(err => {
-            res.json(err);
-        })
 
+
+
+    Game.insertMany(data)
+        .then(res => res.sendStatus(200).send('Inserted successfully'))
+        .catch(err => res.json(err))
 });
 
 router.post('/insertbet', async (req,res) => {
@@ -123,15 +121,9 @@ router.post('/insertbet', async (req,res) => {
         added: req.body.added
     });
 
-    promise.then(
-        data => {
-            res.json(data)
-        }
-    )
-    .catch(err => {
-        res.json(err)
-    })
-
+    promise
+        .then(data => res.json(data))
+        .catch(err => res.json(err))
 });
 
 
@@ -160,7 +152,6 @@ router.post('/probability', async (req, res) => {
         const events39 = req.body['events.40'];
         const events43 = req.body['events.44'];
         const events47 = req.body['events.48'];
-        console.log(total, events39,events43,events47);
         const lessThan = await Game.count({"$and": [{"events.40": events39},{"events.44" : events43}, {"events.48" :events47}, {"ft":{ "$lt" : total}}]});
         const greaterThan = await Game.count({"$and": [{"events.40": events39},{"events.44" : events43}, {"events.48" :events47}, {"ft":{ "$gt" : total}}]});
         const result = await Promise.all([lessThan, greaterThan]);
@@ -169,8 +160,16 @@ router.post('/probability', async (req, res) => {
     } catch (e) {
         res.json(e)
     }
+});
 
-
+router.post('/validate', async (req, res) => {
+    try {
+       const query = Game.find({'id': req.body.id}, {'id': 1});
+       const promise = query.exec();
+       promise.then(data => res.json(data)).catch(err => res.json(err));
+    } catch (e) {
+        res.json(e);
+    }
 });
 
 module.exports = router;

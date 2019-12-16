@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import getAllById from '../utils/getGamesById';
-import { insertRows } from '../utils/asyncUtils'
+import { insertRows, validateRows } from '../utils/asyncUtils'
 
 class EndedEvents extends Component{
     constructor(){
@@ -19,6 +19,7 @@ class EndedEvents extends Component{
         this.fetchData = this.fetchData.bind(this);
         this.getAllMatchesDetailsById = this.getAllMatchesDetailsById.bind(this);
         this.insertMatches = this.insertMatches.bind(this);
+        this.validateMatches = this.validateMatches.bind(this);
     }
 
     handleSubmit(e){
@@ -57,7 +58,23 @@ class EndedEvents extends Component{
         return await Promise.all(promises);
     }
 
-
+    validateMatches(){
+        const { matches } = this.state;
+        let ids = matches.map(match => match.id);
+        validateRows(ids).then(
+            data => {
+                if (data.length > 0){
+                    let ids = [].concat.apply([], data).map(item => item.id);
+                    this.setState({matches: this.state.matches.filter(match => !ids.includes(match.id))});
+                }
+                this.insertMatches()
+            }
+        ).catch(error => {
+            this.setState({
+                error: JSON.stringify(error.message)
+            })
+        });
+    }
 
     insertMatches(){
         const { matches } = this.state;
@@ -131,7 +148,7 @@ class EndedEvents extends Component{
                 {matches.length > 0 &&
                 <button
                     className={this.state.dbSpinner ? 'btn btn-danger' : 'btn btn-success'}
-                    onClick={this.insertMatches}
+                    onClick={this.validateMatches}
                 >
                     Insert in DB
                 </button>}

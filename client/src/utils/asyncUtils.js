@@ -68,11 +68,28 @@ async function insertRows(arr){
     }
 }
 
+async function validateRows(arr){
+    const promises = arr.map(async id => {
+        const response = await fetch('/validate', {
+            method: 'POST',
+            body: JSON.stringify({id}),
+            headers: {"Content-Type": "application/json"}
+        });
+        if(response.ok) {
+            return await response.json();
+        } else {
+            return response;
+        }
+    });
+    return await Promise.all(promises)
+}
+
 
 module.exports = {
     getOdds,
     insertbet,
     findSimilar,
     getAllLive,
-    insertRows
+    insertRows,
+    validateRows
 };
