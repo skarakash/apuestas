@@ -1,26 +1,52 @@
-.App {
-  text-align: center;
+html, body {
+    height: 100%;
 }
 
-.App-logo {
-  height: 40vmin;
+nav {
+  height: 75px;
+  background-color: lightskyblue;
+  margin-bottom: 100px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+#root {
+    height: 100%;
+}
+
+.nav_list {
+  margin: 0;
+  padding: 0;
   display: flex;
-  flex-direction: column;
+  list-style-type: none;
+  flex-direction: row;
+  justify-content: space-evenly;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  height: 75px;
 }
 
-.App-link {
-  color: #09d3ac;
+.nav_list-item {
+  background: white;
+  border-radius: 3px;
+  padding: 5px;
 }
 
-.results{
-  word-wrap: break-word;
+.login_form {
+    height: 300px;
+    width: 300px;
+}
+
+.login-form_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.inplay-container {
+    height: 100%;
+    padding-top: 85px;
+}
+
+.inplay-container .buttons {
+    display: flex;
+    justify-content: space-evenly;
 }

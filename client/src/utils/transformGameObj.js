@@ -43,9 +43,17 @@ const getFulltimeScore = obj => {
 const getHalftimeScore = obj => {
     if (obj.scores) {
         const { scores } = obj;
-        return Number(scores['1'].home) + Number(scores['1'].home)
+        return Number(scores['1'].home) + Number(scores['1'].away)
     } else {
         return 0
+    }
+};
+
+const getStats = obj => {
+    if(obj.stats){
+        return {last_10_mins_score: obj.stats["last_10_mins_score"].map(score => Number(score))}
+    } else {
+        return [0,0]
     }
 };
 
@@ -59,8 +67,6 @@ const transformMatchData = obj => {
             tempObj[i] = null;
         }
 
-        obj.stats["last_10_mins_score"] = obj.stats["last_10_mins_score"].map(score => Number(score));
-
         for(let prop in tempObj){
             events.map(item => {
                 if (item.minute === Number(prop)){
@@ -73,7 +79,8 @@ const transformMatchData = obj => {
                 {events: formObjectWithMins(tempObj)},
                 {ft: getFulltimeScore(obj)},
                 {ht: getHalftimeScore(obj)},
-                {time: `${new Date(obj.time * 1000)}` }
+                {time: `${new Date(obj.time * 1000)}`},
+                {stats: getStats(obj)}
             );
         propsToDelete.map(prop => delete finalObj[prop]);
         return finalObj;

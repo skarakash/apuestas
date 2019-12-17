@@ -9,34 +9,20 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 
-import ShowDataForm from './Components/ShowDataForm';
 import EndedEvents from './Components/EndedEvents';
 import Inplay from './Components/Inplay/Inplay';
+import LoginPage from './Components/Login';
 
 
 function App() {
   return (
       <Router>
-          <div>
-              <nav>
-                  <ul>
-                      <li>
-                          <Link to="/showDataForm">Show Data Form</Link>
-                      </li>
-                      <li>
-                          <Link to="/byDate">All by date</Link>
-                      </li>
-                      <li>
-                          <Link to="/inplay">Inplay</Link>
-                      </li>
-                  </ul>
-              </nav>
-
+          <div style={{height: '100%'}}>
               <Switch>
-                  <Route path="/showDataForm">
-                      <ShowDataForm />
+                  <Route exact path="/">
+                      <LoginPage />
                   </Route>
-                  <Route path="/byDate">
+                  <Route path="/endedevents">
                       <EndedEvents />
                   </Route>
                   <Route path="/inplay">

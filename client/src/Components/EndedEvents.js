@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+
 import getAllById from '../utils/getGamesById';
 import { insertRows, validateRows } from '../utils/asyncUtils'
 
@@ -121,6 +123,9 @@ class EndedEvents extends Component{
         const { matchesIds, matches, error } = this.state;
         return (
             <div className="container">
+                <Link to="/inplay">
+                    <button className="btn btn-info">Inplay</button>
+                </Link>
             <form className="container" onSubmit={this.handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="date">Enter date</label>
