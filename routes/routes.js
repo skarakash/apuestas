@@ -65,7 +65,7 @@ router.get('/inplayevents', (req,res) => {
 
     p.then(
         data => {
-            let games = data.results.filter(game => Number(game.timer.tm) >= 43);
+            let games = data.results.filter(game => Number(game.timer.tm) >= 43 && Number(game.timer.tm) <= 58);
             res.json(games);
         }
     ).catch(err => {
@@ -149,14 +149,20 @@ router.get('/getlast', async (req,res) => {
 router.post('/probability', async (req, res) => {
     try {
         const total = req.body.total;
-        const events39 = req.body['events.40'];
-        const events43 = req.body['events.44'];
-        const events47 = req.body['events.48'];
-        const lessThan = await Game.count({"$and": [{"events.40": events39},{"events.44" : events43}, {"events.48" :events47}, {"ft":{ "$lt" : total}}]});
-        const greaterThan = await Game.count({"$and": [{"events.40": events39},{"events.44" : events43}, {"events.48" :events47}, {"ft":{ "$gt" : total}}]});
-        const result = await Promise.all([lessThan, greaterThan]);
-        let [under, over] = result;
-        res.json({under, over, total})
+        console.log(req.body);
+        // const events30 = req.body['events.30'];
+        const events35 = req.body['events.35'];
+        const events40 = req.body['events.40'];
+        const events45 = req.body['events.45'];
+        const lessThan = await Game.count({"$and": [
+            // {"events.30": events30},
+                {"events.35": events35}, {"events.40": events40}, {"events.45": events45}, {"ft":{ "$lt" : total}}]});
+        const greaterThan = await Game.count({"$and": [
+            // {"events.30": events30},
+                {"events.35": events35}, {"events.40": events40}, {"events.45": events45}, {"ft":{ "$gt" : total}}]});
+        const result = await Promise.all([greaterThan, lessThan]);
+        let [ over, under ] = result;
+        res.json({total, over, under})
     } catch (e) {
         res.json(e)
     }

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import Loader from 'react-loader-spinner';
 
-import { getOdds,  getAllLive, insertRows, fetchDataFromDB} from '../../utils/asyncUtils';
+import { getOdds,  getLiveGamesIDs, insertRows} from '../../utils/asyncUtils';
 import getAllById from '../../utils/getGamesById';
 import InplayItem from './InplayItem';
 
@@ -12,57 +13,44 @@ class Inplay extends Component {
             ids: [],
             matches: [],
             error: '',
-            odds: []
+            odds: [],
+            loader: false,
         };
 
         this.getGames = this.getGames.bind(this);
-        this.getIds = this.getIds.bind(this);
-        this.getMatchOdds = this.getMatchOdds.bind(this);
         this.save = this.save.bind(this);
     }
 
-    getIds = () => getAllLive()
-        .then((data) => {
-            if (data) {
-                this.setState({
-                    ids: data
-                })
-            }
-        })
-        .then(() => this.getGames())
-        .then(() => {
-            if (this.state.ids.length > 0){
-                this.getMatchOdds(this.state.ids)
-            }
-        })
-        .catch(error => {
-            this.setState({error})
-        });
-
-    getGames = () => {
+    getLiveGames = () => {
         const { ids } = this.state;
-        if (ids.length > 0) {
-            getAllById(this.state.ids)
-                .then(
-                    data => {
-                        this.setState({
-                            matches: data
-                        })
-                    }
-                )
-                .catch(error => this.setState({error}));
-        }
+        this.setState({loader: true});
+        getLiveGamesIDs()
+            .then((data) => {
+                if (data) {
+                    this.setState({
+                        ids: data
+                    })
+                }
+            })
+            .then(() => {
+                if (ids.length > 0) {
+                    this.getGames()
+                }
+            })
+            .then(() => {
+                if (this.state.ids.length > 0){
+                    this.getMatchOdds(this.state.ids);
+                }
+            })
+            .then(() => this.setState({loader: false}));
     };
 
-    getMatchOdds = (ids) => getOdds(ids)
-        .then(data => {
-            this.setState({
-                odds: data
-            })
-        })
-        .catch(error => this.setState({error}));
+    getGames = () => getAllById(this.state.ids).then(data => { this.setState({matches: data })});
+
+    getMatchOdds = (ids) => getOdds(ids).then(data => {this.setState({odds: data,loader: false })});
 
     save = match => {
+        this.setState({loader: true});
         const obj = {
             league_name: match.league,
             teams: match.teams,
@@ -72,14 +60,14 @@ class Inplay extends Component {
             total: match.odds.handicap,
             probab: match.persentage || 0
         };
-        insertRows(obj).catch(error => this.setState({error}))
+        insertRows(obj).then(()=> this.setState({loader: false})).catch(error => this.setState({error}))
     };
 
 
 
 
     render(){
-        const {ids, matches, odds } = this.state;
+        const {ids, matches, odds,loader } = this.state;
         const divStyle = {
             border: '1px solid grey',
             padding: '0 5px'
@@ -88,15 +76,18 @@ class Inplay extends Component {
 
         return <div className="container inplay-container">
             <div className="buttons">
-                <button className="btn btn-success" onClick={() => this.getIds()}>LIVE</button>
+                <button className="btn btn-success" onClick={() => this.getLiveGames()}>LIVE</button>
                 {ids.length > 0 && <button className='btn btn-info' onClick={() => this.getMatchOdds(ids)}>Get odds</button>}
                 <button className='btn btn-info' onClick={()=> this.setState({ids: [], matches: [], odds: []})}>Clear</button>
                 <Link to="/endedevents">
                     <button className="btn btn-info">Ended Events</button>
                 </Link>
             </div>
-            {matches.length > 0 && matches.map(match => match ? <div key={match.id} style={divStyle}><InplayItem match={match} odds={odds.filter(odd => odd.matchId === match.id)[0]}/></div> : null)}
-            {this.state.error.length > 0 && this.state.error}
+                {matches.length > 0  && matches.map(match => match ?
+                    <div key={match.id} style={divStyle}><InplayItem match={match} odds={odds.filter(odd => odd.matchId === match.id)[0]}/></div> :
+                null)}
+                {this.state.error.length > 0 && this.state.error}
+           <div className="loading_indicator"><Loader type="Puff" color="#00BFFF" height={80} width={80} visible={loader}/></div>
         </div>
     }
 }

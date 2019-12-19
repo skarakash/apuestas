@@ -42,12 +42,14 @@ async function findSimilar(data){
     }
 }
 
-async function getAllLive(){
+async function getLiveGamesIDs(){
     try {
         const response = await fetch('/inplayevents');
         const data = await response.json();
         if (data && data.length > 0){
             return data.filter(item => Number(item.time_status) === 1).map(res => res.id);
+        } else {
+            return [];
         }
     }
     catch (err) {
@@ -89,7 +91,7 @@ module.exports = {
     getOdds,
     insertbet,
     findSimilar,
-    getAllLive,
+    getLiveGamesIDs,
     insertRows,
     validateRows
 };

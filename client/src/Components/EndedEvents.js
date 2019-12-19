@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
+import Loader from 'react-loader-spinner';
+
 import getAllById from '../utils/getGamesById';
 import { insertRows, validateRows } from '../utils/asyncUtils'
 
@@ -13,7 +15,7 @@ class EndedEvents extends Component{
             matchesIds: [],
             matches:[],
             dbSpinner:  false,
-            allByIdSpinner: false,
+            loader: false,
             error: ''
         };
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -27,7 +29,7 @@ class EndedEvents extends Component{
     handleSubmit(e){
         const { dates, tournamentId } = this.state;
         e.preventDefault();
-        this.setState({error: null});
+        this.setState({error: null, loader: true});
         if(dates){
             let datesSet = dates.split(',').map(item => item.trim());
             this.fetchData(datesSet, tournamentId)
@@ -35,7 +37,8 @@ class EndedEvents extends Component{
                     let matchesIds = [].concat.apply([], data);
                     this.setState({matchesIds})
                 })
-                .catch(err => console.log(err));
+                .catch(err => console.log(err))
+                .finally(()=> this.setState({loader: false}));
         }
     }
 
@@ -47,6 +50,7 @@ class EndedEvents extends Component{
     }
 
     async fetchData(datesSet, tournamentId){
+        this.setState({loader: true});
         const promises = datesSet.map( async (date) => {
             const response = await fetch('/eventsended', {
                 method: 'POST',
@@ -63,6 +67,7 @@ class EndedEvents extends Component{
     validateMatches(){
         const { matches } = this.state;
         let ids = matches.map(match => match.id);
+        this.setState({loader: true});
         validateRows(ids).then(
             data => {
                 if (data.length > 0){
@@ -75,7 +80,7 @@ class EndedEvents extends Component{
             this.setState({
                 error: JSON.stringify(error.message)
             })
-        });
+        }).finally(() => this.setState({loader: false}));
     }
 
     insertMatches(){
@@ -120,7 +125,7 @@ class EndedEvents extends Component{
     }
 
     render(){
-        const { matchesIds, matches, error } = this.state;
+        const { matchesIds, matches, error, loader } = this.state;
         return (
             <div className="container">
                 <Link to="/inplay">
@@ -158,6 +163,7 @@ class EndedEvents extends Component{
                     Insert in DB
                 </button>}
                 {error && <div>Error: {error}</div>}
+                <div className="loading_indicator"><Loader type="Puff" color="#00BFFF" height={80} width={80} visible={loader}/></div>
             </div>
         )
     }

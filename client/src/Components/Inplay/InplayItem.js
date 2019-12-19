@@ -5,7 +5,6 @@ import {
     buttonStyles,
     oddsStyles,
     oddButton,
-    pStylesHigh
 } from './InplayItemStyles'
 
 import { findSimilar,insertbet } from '../../utils/asyncUtils';
@@ -27,9 +26,10 @@ class InplayItem extends Component{
         const {events} = match;
         const data = {
             "total": Number(odds.handicap),
+            // "events.30": events['30'],
+            "events.35": events['35'],
             "events.40": events['40'],
-            "events.44": events['44'],
-            "events.48": events['48']
+            "events.45": events['45']
         };
         findSimilar(data)
             .then(data => this.setState({probability: data}))

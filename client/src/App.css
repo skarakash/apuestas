@@ -49,4 +49,9 @@ nav {
 .inplay-container .buttons {
     display: flex;
     justify-content: space-evenly;
+    margin-bottom: 25px;
+}
+
+.loading_indicator {
+    text-align: center;
 }

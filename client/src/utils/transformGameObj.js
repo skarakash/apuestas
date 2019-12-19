@@ -63,7 +63,7 @@ const transformMatchData = obj => {
     let tempObj = {};
     let finalObj = {};
     if (events.length > 0){
-        for (let i = 1; i <= events[events.length -1]['minute']; i++) {
+        for (let i = 1; i <= events[events.length - 1]['minute']; i++) {
             tempObj[i] = null;
         }
 
