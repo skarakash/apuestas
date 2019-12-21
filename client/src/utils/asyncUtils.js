@@ -1,16 +1,10 @@
-async function getOdds(ids){
-    const promises = ids.map( async id => {
-        const response = await fetch('/eventodds', {
-            method: 'POST',
-            body: JSON.stringify({id}),
-            headers: {"Content-Type": "application/json"}
-        });
-        let data = await response.json();
-        data = Object.assign({}, data, {matchId: id});
-        return data;
+async function getEventOdds(id){
+    const response = await fetch('/eventodds', {
+        method: 'POST',
+        body: JSON.stringify({id}),
+        headers: {"Content-Type": "application/json"}
     });
-
-    return await Promise.all(promises);
+    return await response.json();
 }
 
 
@@ -86,12 +80,25 @@ async function validateRows(arr){
     return await Promise.all(promises)
 }
 
+async function fetchEndedMatches(datesSet, tournamentId){
+    const promises = datesSet.map( async (date) => {
+        const response = await fetch('/eventsended', {
+            method: 'POST',
+            body: JSON.stringify({date, tournamentId}),
+            headers: {"Content-Type": "application/json"}
+        });
+        return await response.json();
+    });
+
+    return await Promise.all(promises);
+}
 
 module.exports = {
-    getOdds,
+    getEventOdds,
     insertbet,
     findSimilar,
     getLiveGamesIDs,
     insertRows,
-    validateRows
+    validateRows,
+    fetchEndedMatches
 };

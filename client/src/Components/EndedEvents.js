@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Loader from 'react-loader-spinner';
 
-import getAllById from '../utils/getGamesById';
-import { insertRows, validateRows } from '../utils/asyncUtils'
+import { insertRows, validateRows,fetchEndedMatches,getEventOdds } from '../utils/asyncUtils'
 
 class EndedEvents extends Component{
     constructor(){
@@ -12,18 +11,14 @@ class EndedEvents extends Component{
         this.state = {
             dates: null,
             tournamentId: null,
-            matchesIds: [],
             matches:[],
-            dbSpinner:  false,
             loader: false,
             error: ''
         };
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.fetchData = this.fetchData.bind(this);
-        this.getAllMatchesDetailsById = this.getAllMatchesDetailsById.bind(this);
+
         this.insertMatches = this.insertMatches.bind(this);
         this.validateMatches = this.validateMatches.bind(this);
+        this.getEventOdds = this.getEventOdds.bind(this);
     }
 
     handleSubmit(e){
@@ -32,59 +27,60 @@ class EndedEvents extends Component{
         this.setState({error: null, loader: true});
         if(dates){
             let datesSet = dates.split(',').map(item => item.trim());
-            this.fetchData(datesSet, tournamentId)
-                .then( data => {
-                    let matchesIds = [].concat.apply([], data);
-                    this.setState({matchesIds})
+            fetchEndedMatches(datesSet, tournamentId)
+                .then( matches => {
+                    matches = [].concat.apply([], matches);
+                    this.setState({matches});
                 })
-                .catch(err => console.log(err))
-                .finally(()=> this.setState({loader: false}));
+                .then(() => {
+                    this.getEventOdds()
+                })
         }
     }
 
-    handleChange(e, name) {
-        e.preventDefault();
-        this.setState({
-           [name]: e.target.value
-        });
-    }
-
-    async fetchData(datesSet, tournamentId){
-        this.setState({loader: true});
-        const promises = datesSet.map( async (date) => {
-            const response = await fetch('/eventsended', {
-                method: 'POST',
-                body: JSON.stringify({date, tournamentId}),
-                headers: {"Content-Type": "application/json"}
+    getEventOdds = () => {
+        this.state.matches.map(match => {
+            getEventOdds(match.id).then((data) => {
+                this.setState(prevState => {
+                    let newData =  prevState.matches.map(
+                        match => (data.odds).hasOwnProperty("ht") && Number(data.id) === Number(match.id) ?
+                            {
+                                away: match.away,
+                                home: match.home,
+                                league: match.league,
+                                id: match.id,
+                                preBookieTotal: data.odds.pre.bookieTotal,
+                                htBookieTotal: data.odds.ht.bookieTotal,
+                                ht: data.odds.ht.matchTotal,
+                                ft: match.ss ? match['ss'].split("-").reduce((a, c) => Number(a) + Number(c)) : 0,
+                                time: new Date(Number(match.time) * 1000),
+                            } :
+                            match
+                    );
+                    return {matches: newData, loader: false};
+                })
             });
-            let data = await response.json();
-            return data.results.map(match => match.id);
-        });
-
-        return await Promise.all(promises);
-    }
+        })
+    };
 
     validateMatches(){
         const { matches } = this.state;
-        let ids = matches.map(match => match.id);
+        let ids = matches.filter(match => match.ht).map(match => match.id);
         this.setState({loader: true});
         validateRows(ids).then(
             data => {
                 if (data.length > 0){
                     let ids = [].concat.apply([], data).map(item => item.id);
-                    this.setState({matches: this.state.matches.filter(match => !ids.includes(match.id))});
+                    this.setState({matches: this.state.matches.filter(match => match.ht && !ids.includes(match.id))});
                 }
                 this.insertMatches()
             }
-        ).catch(error => {
-            this.setState({
-                error: JSON.stringify(error.message)
-            })
-        }).finally(() => this.setState({loader: false}));
+        );
     }
 
     insertMatches(){
         const { matches } = this.state;
+        this.setState({loader: true});
         if (matches.length > 0) {
           insertRows(matches)
               .then(data => {
@@ -92,8 +88,8 @@ class EndedEvents extends Component{
                         throw new Error(data.message)
                     } else {
                         this.setState({
-                            dbSpinner: false,
-                            matches: []
+                            matches: [],
+                            loader: false
                         })
                     }
           }).catch(error => {
@@ -101,37 +97,20 @@ class EndedEvents extends Component{
                   error: JSON.stringify(error.message)
               })
           });
+        } else {
+            this.setState({loader: false})
         }
     }
 
 
-
-    renderData(){
-        const {matches} = this.state;
-        return (
-            <div>{matches.length}</div>
-        )
-    }
-
-    getAllMatchesDetailsById(){
-        const { matchesIds } = this.state;
-        getAllById(matchesIds)
-            .then( data => {
-                this.setState({
-                    allByIdSpinner: false,
-                    matches: data
-                })
-            });
-    }
-
     render(){
-        const { matchesIds, matches, error, loader } = this.state;
+        const { matches, error, loader } = this.state;
         return (
             <div className="container">
                 <Link to="/inplay">
                     <button className="btn btn-info">Inplay</button>
                 </Link>
-            <form className="container" onSubmit={this.handleSubmit}>
+            <form className="container" onSubmit={(e) => this.handleSubmit(e)}>
                 <div className="form-group">
                     <label htmlFor="date">Enter date</label>
                     <input type="text" className="form-control" id="date"
@@ -145,19 +124,10 @@ class EndedEvents extends Component{
                 <button type="submit" className="btn btn-primary">Get</button>
             </form>
                 <br/>
-                {matchesIds.length > 0 &&
-                <button
-                    className={this.state.allByIdSpinner ? 'btn btn-danger' : 'btn btn-success'}
-                    onClick={this.getAllMatchesDetailsById}
-                >
-                    Get all by id
-                </button>}
-                <br/>
-                {this.renderData()}
+                {matches.length}
 
                 {matches.length > 0 &&
                 <button
-                    className={this.state.dbSpinner ? 'btn btn-danger' : 'btn btn-success'}
                     onClick={this.validateMatches}
                 >
                     Insert in DB

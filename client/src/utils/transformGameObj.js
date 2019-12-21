@@ -70,7 +70,7 @@ const transformMatchData = obj => {
         for(let prop in tempObj){
             events.map(item => {
                 if (item.minute === Number(prop)){
-                    tempObj[prop] = item.goal
+                    return tempObj[prop] = item.goal
                 }
             });
         }

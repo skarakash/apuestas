@@ -2,26 +2,35 @@ const express = require('express');
 const router = express.Router();
 const request = require('request');
 const { token } = require('../config');
-const Game = require('../Models/Game');
+const Match = require('../Models/Match');
 const BetM = require('../Models/MongoBet');
+
+const transformOddsArray = require('../utils/utils').transformOddsArray;
 
 
 
 router.post('/eventsended', (req,res) => {
-    const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.body.date}&league_id=${req.body.tournamentId}`;
-    if (req.body.date.length === 8){
+    const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.body.date}&league_id=${req.body.tournamentId}&total`;
+    const p = new Promise((resolve, reject) => {
         request(
             { url },
             (error, response, body) => {
                 if (error || response.statusCode !== 200) {
-                    return res.status(500).json(error);
+                    console.log(error);
+                    res.json(reject(error))
                 }
-                res.json(JSON.parse(body));
+                resolve(JSON.parse(body))
             }
         )
-    } else {
-        res.json("Not valid date format")
-    }
+    });
+
+    p.then(data => {
+        console.log(data)
+        res.json(data.results);
+    }).catch(err => {
+        console.log(err);
+        res.json(err);
+    });
 });
 
 router.post('/eventview', (req,res) => {
@@ -91,8 +100,12 @@ router.post('/eventodds', (req,res) => {
 
     p.then(
         data => {
-            let odds = data.results.odds['78_3'][0];
-            res.json(odds)
+            if ((data.results.odds).hasOwnProperty('78_3')) {
+                res.json({id: req.body.id, odds: transformOddsArray(data.results.odds['78_3'])});
+            } else {
+                res.json({id: req.body.id, odds: {}})
+            }
+
         }
     ).catch(err => {
         console.error(err);
@@ -103,10 +116,7 @@ router.post('/eventodds', (req,res) => {
 
 router.post('/insert', async (req, res) => {
     const data = req.body;
-
-
-
-    Game.insertMany(data)
+    Match.insertMany(data)
         .then(res => res.sendStatus(200).send('Inserted successfully'))
         .catch(err => res.json(err))
 });
@@ -170,7 +180,7 @@ router.post('/probability', async (req, res) => {
 
 router.post('/validate', async (req, res) => {
     try {
-       const query = Game.find({'id': req.body.id}, {'id': 1});
+       const query = Match.find({'id': req.body.id}, {'id': 1});
        const promise = query.exec();
        promise.then(data => res.json(data)).catch(err => res.json(err));
     } catch (e) {
