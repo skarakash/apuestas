@@ -1,23 +1,51 @@
+const ids = require('./ids');
+
 const getMatchMinute = (str) => {
-  return Number(str.split(":")[0]);
+  return str ? Number(str.split(":")[0]) : 0;
 };
 
 const getMatchTotal = (str) => {
-    return Number(str.split("-").reduce((a, c) => Number(a) + Number(c)));
+    return str ? Number(str.split("-").reduce((a, c) => Number(a) + Number(c))) : 0;
 };
 
-module.exports = {
-  transformOddsArray: function(arr){
-      if(arr.length > 0){
-          arr =  arr.filter(odd => odd.time_str !== null && odd.ss !== "00:00");
-          let allOdds =  arr.map(odd => Object.assign({}, {matchTotal: getMatchTotal(odd.ss)}, {bookieTotal: Number(odd.handicap)}, {time: getMatchMinute(odd.time_str)}));
-          let ht = allOdds.filter(odd => odd.time === 30);
-          ht = ht[ht.length - 1];
+const removeDuplicates = (myArr, prop) => {
+  return myArr.filter((obj, pos, arr) => {
+      return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos;
+  });
+}
 
-          let pre = allOdds[allOdds.length - 1];
-          return {ht, pre}
-      } else {
-          return {}
-      }
+const transformOddsArray = data => {
+  if (!data.hasOwnProperty('78_3') || data['78_3'].length < 10){
+    return []
   }
+
+  let odds = data['78_3'].map( odd => {
+    return Object.assign({}, {time: getMatchMinute(odd['time_str'])}, {total: getMatchTotal(odd['ss'])}, {bookieTotal: Number(odd['handicap'])})
+  })
+
+  odds = removeDuplicates(odds, 'time');
+  return odds = odds.map(odd => Object.assign({}, {[odd.time]: odd}));
+  
+}
+
+getNumberOfPages = total => {
+  if (total > 50 && (total % 50 === 0)){
+    return Math.round(total / 50)
+  } 
+
+  if (total > 50 && (total % 50 > 0)){
+    return Math.round((total / 50)) + 1
+  } 
+
+  return 1
+}
+
+filterGames = arr => {
+  return arr = arr.filter( item => !item.league.name.includes('Women'))
+} 
+
+module.exports = {
+  transformOddsArray, 
+  getNumberOfPages,
+  filterGames
 };

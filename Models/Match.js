@@ -29,34 +29,19 @@ const MatchSchema = new mongoose.Schema({
         name: String,
         cc: String
     },
-    ft: {
+    ss: {
         type: Number,
         required: true
     },
-    ht: {
-        type: Number,
+    scores: {
+        type: Object
+    },
+    odds: {
+        type: Object,
         required: true
     },
-    preBookieTotal: {
-        type: Number,
-        required: true
-    },
-    htBookieTotal: {
-        type: Number,
-        required: true
-    }
-}, { emitIndexErrors: true });
-
-const handleE11000 = function(error, res, next) {
-    if (error.name === 'MongoError' && error.code === 11000) {
-        next(new Error('There was a duplicate key error'));
-    } else {
-        next();
-    }
-};
-
-MatchSchema.post('insertMany', handleE11000);
+});
 
 MatchSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model('Matches', MatchSchema);
+module.exports = mongoose.model('Matches', MatchSchema, 'Stats');

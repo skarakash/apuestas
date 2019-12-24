@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Loader from 'react-loader-spinner';
 
-import { getOdds,  getLiveGamesIDs, insertRows} from '../../utils/asyncUtils';
+import { getEventOdds,  getLiveGamesIDs} from '../../utils/asyncUtils';
 import getAllById from '../../utils/getGamesById';
 import InplayItem from './InplayItem';
 
@@ -18,7 +18,6 @@ class Inplay extends Component {
         };
 
         this.getGames = this.getGames.bind(this);
-        this.save = this.save.bind(this);
     }
 
     getLiveGames = () => {
@@ -39,7 +38,7 @@ class Inplay extends Component {
             })
             .then(() => {
                 if (this.state.ids.length > 0){
-                    this.getMatchOdds(this.state.ids);
+                   this.getMatchOdds(this.state.ids);
                 }
             })
             .then(() => this.setState({loader: false}));
@@ -47,27 +46,27 @@ class Inplay extends Component {
 
     getGames = () => getAllById(this.state.ids).then(data => { this.setState({matches: data })});
 
-    getMatchOdds = (ids) => getOdds(ids).then(data => {this.setState({odds: data,loader: false })});
-
-    save = match => {
-        this.setState({loader: true});
-        const obj = {
-            league_name: match.league,
-            teams: match.teams,
-            match_id: match.id,
-            over_od: match.odds.over_od,
-            under_od: match.odds.under_od,
-            total: match.odds.handicap,
-            probab: match.persentage || 0
-        };
-        insertRows(obj).then(()=> this.setState({loader: false})).catch(error => this.setState({error}))
+    getMatchOdds = (ids) => {
+        ids.forEach(id => {
+            getEventOdds(id)
+                .then(
+                    (data) => {
+                        this.setState( prevState => {
+                          let newData =   prevState.matches.map(
+                                match => Number(match.id) === Number(data.id)? {...match, currentBookieTotal: data.odds.latest.bookieTotal} : match
+                            );
+                            return {matches: newData}
+                        })
+                    }
+                )
+        })
     };
 
 
 
 
     render(){
-        const {ids, matches, odds,loader } = this.state;
+        const {ids, matches, loader } = this.state;
         const divStyle = {
             border: '1px solid grey',
             padding: '0 5px'
@@ -84,7 +83,7 @@ class Inplay extends Component {
                 </Link>
             </div>
                 {matches.length > 0  && matches.map(match => match ?
-                    <div key={match.id} style={divStyle}><InplayItem match={match} odds={odds.filter(odd => odd.matchId === match.id)[0]}/></div> :
+                    <div key={match.id} style={divStyle}><InplayItem match={match}/></div> :
                 null)}
                 {this.state.error.length > 0 && this.state.error}
            <div className="loading_indicator"><Loader type="Puff" color="#00BFFF" height={80} width={80} visible={loader}/></div>

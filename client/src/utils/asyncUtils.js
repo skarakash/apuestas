@@ -1,25 +1,11 @@
 async function getEventOdds(id){
-    const response = await fetch('/eventodds', {
-        method: 'POST',
-        body: JSON.stringify({id}),
-        headers: {"Content-Type": "application/json"}
-    });
-    return await response.json();
-}
-
-
-async function insertbet(obj){
     try {
-        const response = await fetch('/insertbet', {
-            method: 'POST',
-            body: JSON.stringify(obj),
-            headers: {"Content-Type": "application/json"}
-        });
+        const response = await fetch(`/eventodds?&event_id=${id}`);
         return await response.json();
+    } catch (error) {
+        return error;
     }
-    catch (err) {
-        return (`fetch failed  ${err}`);
-    }
+
 }
 
 async function findSimilar(data){
@@ -52,53 +38,41 @@ async function getLiveGamesIDs(){
 }
 
 async function insertRows(arr){
-    const response = await fetch('/insert', {
-        method: 'POST',
-        body: JSON.stringify(arr),
-        headers: {"Content-Type": "application/json"}
-    });
-    if(response.ok) {
-        return await response.json();
-    } else {
-        return response;
+    try {
+        const response = await fetch('/insert', {
+            method: 'POST',
+            body: JSON.stringify(arr),
+            headers: {"Content-Type": "application/json"}
+        });
+        return response.json();
+    } catch (error) {
+        return error;
     }
 }
 
-async function validateRows(arr){
-    const promises = arr.map(async id => {
-        const response = await fetch('/validate', {
-            method: 'POST',
-            body: JSON.stringify({id}),
-            headers: {"Content-Type": "application/json"}
-        });
-        if(response.ok) {
-            return await response.json();
-        } else {
-            return response;
-        }
-    });
-    return await Promise.all(promises)
+async function validateRow(id){
+    try {
+        const response = await fetch(`/validate?&id=${id}`);
+        return response.json()
+    } catch (error) {
+        return error;
+    }
 }
 
-async function fetchEndedMatches(datesSet, tournamentId){
-    const promises = datesSet.map( async (date) => {
-        const response = await fetch('/eventsended', {
-            method: 'POST',
-            body: JSON.stringify({date, tournamentId}),
-            headers: {"Content-Type": "application/json"}
-        });
+async function fetchEndedMatches(date){
+    try {
+        const response = await fetch(`/eventsended?&day=${date}`);
         return await response.json();
-    });
-
-    return await Promise.all(promises);
+    } catch (error) {
+        return error;
+    }
 }
 
 module.exports = {
     getEventOdds,
-    insertbet,
     findSimilar,
     getLiveGamesIDs,
     insertRows,
-    validateRows,
+    validateRow,
     fetchEndedMatches
 };

@@ -49,6 +49,12 @@ const pStylesHigh ={
     color: 'white'
 };
 
+const inplayWrapperStyles = {
+  display: 'flex',
+    justifyContent: 'space-evenly',
+    alignItems: 'center'
+};
+
 module.exports = {
     teamsStyles,
     scoreStyles,
@@ -57,5 +63,6 @@ module.exports = {
     oddButton,
     probabilityStyles,
     probabilityStylesHigh,
-    pStylesHigh
+    pStylesHigh,
+    inplayWrapperStyles
 };

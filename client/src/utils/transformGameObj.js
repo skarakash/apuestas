@@ -68,7 +68,7 @@ const transformMatchData = obj => {
         }
 
         for(let prop in tempObj){
-            events.map(item => {
+            events.forEach(item => {
                 if (item.minute === Number(prop)){
                     return tempObj[prop] = item.goal
                 }

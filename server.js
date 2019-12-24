@@ -1,5 +1,5 @@
 const express = require('express');
-
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const routes = require('./routes/routes');
 
@@ -7,17 +7,17 @@ const app = express();
 const port = 5000;
 
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     next();
 });
 
-app.use('/', routes);
+app.use('/', routes); 
 
 mongoose.connect(
-    'mongodb+srv://skarakash:highbury@handballstats-rylsw.mongodb.net/test?retryWrites=true&w=majority',
+    'mongodb+srv://serg_ka:highbury@apuestas-ysqq3.mongodb.net/Stats?retryWrites=true&w=majority',
     {
         useNewUrlParser: true,
         useUnifiedTopology: true

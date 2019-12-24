@@ -3,34 +3,20 @@ const router = express.Router();
 const request = require('request');
 const { token } = require('../config');
 const Match = require('../Models/Match');
-const BetM = require('../Models/MongoBet');
 
 const transformOddsArray = require('../utils/utils').transformOddsArray;
+const filterGames = require('../utils/utils').filterGames;
 
-
-
-router.post('/eventsended', (req,res) => {
-    const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.body.date}&league_id=${req.body.tournamentId}&total`;
-    const p = new Promise((resolve, reject) => {
-        request(
-            { url },
-            (error, response, body) => {
-                if (error || response.statusCode !== 200) {
-                    console.log(error);
-                    res.json(reject(error))
-                }
-                resolve(JSON.parse(body))
-            }
-        )
-    });
-
-    p.then(data => {
-        console.log(data)
-        res.json(data.results);
-    }).catch(err => {
-        console.log(err);
-        res.json(err);
-    });
+router.get('/eventsended', (req, res) => {
+    const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.query.day}&page=${req.query.page}`
+    request(url, (error, response, body) => {
+        if (error || response.statusCode !== 200){
+            res.json(error)
+        }
+        let data = JSON.parse(body);
+        data = filterGames(data.results);
+        res.json(data);
+    })
 });
 
 router.post('/eventview', (req,res) => {
@@ -74,7 +60,7 @@ router.get('/inplayevents', (req,res) => {
 
     p.then(
         data => {
-            let games = data.results.filter(game => Number(game.timer.tm) >= 43 && Number(game.timer.tm) <= 58);
+            let games = data.results.filter(game => Number(game.timer.tm) >= 30 && Number(game.timer.tm) <= 55);
             res.json(games);
         }
     ).catch(err => {
@@ -84,8 +70,8 @@ router.get('/inplayevents', (req,res) => {
 
 });
 
-router.post('/eventodds', (req,res) => {
-    const url = `https://api.betsapi.com/v2/event/odds?token=${token}&event_id=${req.body.id}&source=bet365&odds_market=3`;
+router.get('/eventodds', (req,res) => {
+    const url = `https://api.betsapi.com/v2/event/odds?token=${token}&event_id=${req.query.event_id}&source=bet365&odds_market=3`;
     const p = new Promise((resolve, reject) => {
     request(
         { url },
@@ -100,12 +86,8 @@ router.post('/eventodds', (req,res) => {
 
     p.then(
         data => {
-            if ((data.results.odds).hasOwnProperty('78_3')) {
-                res.json({id: req.body.id, odds: transformOddsArray(data.results.odds['78_3'])});
-            } else {
-                res.json({id: req.body.id, odds: {}})
-            }
-
+            let odds = transformOddsArray(data.results.odds);
+            res.json({odds, id: req.query.event_id})
         }
     ).catch(err => {
         console.error(err);
@@ -113,31 +95,14 @@ router.post('/eventodds', (req,res) => {
     });
 });
 
-
 router.post('/insert', async (req, res) => {
-    const data = req.body;
-    Match.insertMany(data)
-        .then(res => res.sendStatus(200).send('Inserted successfully'))
-        .catch(err => res.json(err))
+        const data = req.body;
+        Match.insertMany(data)
+            .then(res => res.sendStatus(200).send('Inserted successfully'))
+            .catch(err => res.json(err))
 });
 
-router.post('/insertbet', async (req,res) => {
-    const promise = BetM.create({
-        id: req.body.id,
-        teams: req.body.teams,
-        total: req.body.total,
-        '%': req.body['%'],
-        odds: req.body.odds,
-        added: req.body.added
-    });
-
-    promise
-        .then(data => res.json(data))
-        .catch(err => res.json(err))
-});
-
-
-router.get('/getlast', async (req,res) => {
+router.get('/getlast', async (req, res) => {
     const query = Game.find().sort({ _id: -1 }).limit(10);
     const promise = query.exec();
     promise.then(data => {
@@ -156,36 +121,14 @@ router.get('/getlast', async (req,res) => {
     });
 });
 
-router.post('/probability', async (req, res) => {
+router.get('/validate', async (req, res) => {
     try {
-        const total = req.body.total;
-        console.log(req.body);
-        // const events30 = req.body['events.30'];
-        const events35 = req.body['events.35'];
-        const events40 = req.body['events.40'];
-        const events45 = req.body['events.45'];
-        const lessThan = await Game.count({"$and": [
-            // {"events.30": events30},
-                {"events.35": events35}, {"events.40": events40}, {"events.45": events45}, {"ft":{ "$lt" : total}}]});
-        const greaterThan = await Game.count({"$and": [
-            // {"events.30": events30},
-                {"events.35": events35}, {"events.40": events40}, {"events.45": events45}, {"ft":{ "$gt" : total}}]});
-        const result = await Promise.all([greaterThan, lessThan]);
-        let [ over, under ] = result;
-        res.json({total, over, under})
-    } catch (e) {
-        res.json(e)
-    }
-});
-
-router.post('/validate', async (req, res) => {
-    try {
-       const query = Match.find({'id': req.body.id}, {'id': 1});
-       const promise = query.exec();
+       const response = Match.find({'id': req.query.id}, {'id': 1});
+       const promise = response.exec();
        promise.then(data => res.json(data)).catch(err => res.json(err));
     } catch (e) {
         res.json(e);
     }
-});
+}); 
 
 module.exports = router;

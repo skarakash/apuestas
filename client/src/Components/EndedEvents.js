@@ -3,104 +3,70 @@ import { Link } from 'react-router-dom';
 
 import Loader from 'react-loader-spinner';
 
-import { insertRows, validateRows,fetchEndedMatches,getEventOdds } from '../utils/asyncUtils'
+import { fetchEndedMatches, validateRow, getEventOdds, insertRows} from '../utils/asyncUtils'
+import { getMatchScore } from '../utils/utils';
 
 class EndedEvents extends Component{
     constructor(){
         super();
         this.state = {
-            dates: null,
-            tournamentId: null,
+            date: null,
             matches:[],
             loader: false,
             error: ''
         };
-
-        this.insertMatches = this.insertMatches.bind(this);
-        this.validateMatches = this.validateMatches.bind(this);
-        this.getEventOdds = this.getEventOdds.bind(this);
+        this.getOdds = this.getOdds.bind(this);
     }
 
     handleSubmit(e){
-        const { dates, tournamentId } = this.state;
+        const { date } = this.state;
         e.preventDefault();
         this.setState({error: null, loader: true});
-        if(dates){
-            let datesSet = dates.split(',').map(item => item.trim());
-            fetchEndedMatches(datesSet, tournamentId)
-                .then( matches => {
-                    matches = [].concat.apply([], matches);
-                    this.setState({matches});
-                })
-                .then(() => {
-                    this.getEventOdds()
-                })
+        if (date.length === 8) {
+            fetchEndedMatches(date)
+            .then( matches => this.setState({matches, loader: false}))
+            .then(() => this.getOdds())
         }
     }
 
-    getEventOdds = () => {
-        this.state.matches.map(match => {
-            getEventOdds(match.id).then((data) => {
-                this.setState(prevState => {
-                    let newData =  prevState.matches.map(
-                        match => (data.odds).hasOwnProperty("ht") && Number(data.id) === Number(match.id) ?
-                            {
-                                away: match.away,
-                                home: match.home,
-                                league: match.league,
-                                id: match.id,
-                                preBookieTotal: data.odds.pre.bookieTotal,
-                                htBookieTotal: data.odds.ht.bookieTotal,
-                                ht: data.odds.ht.matchTotal,
-                                ft: match.ss ? match['ss'].split("-").reduce((a, c) => Number(a) + Number(c)) : 0,
-                                time: new Date(Number(match.time) * 1000),
-                            } :
-                            match
-                    );
-                    return {matches: newData, loader: false};
-                })
-            });
-        })
-    };
-
-    validateMatches(){
+    getOdds = () => {
         const { matches } = this.state;
-        let ids = matches.filter(match => match.ht).map(match => match.id);
-        this.setState({loader: true});
-        validateRows(ids).then(
-            data => {
-                if (data.length > 0){
-                    let ids = [].concat.apply([], data).map(item => item.id);
-                    this.setState({matches: this.state.matches.filter(match => match.ht && !ids.includes(match.id))});
+        matches.forEach( match => {
+            getEventOdds(match.id).then(
+                res => {
+                    this.setState( prevState => {
+                        let matches = prevState.matches.map( match => Number(match.id) === Number(res.id) ? {...match, odds: res.odds} : match)
+                        return {matches}
+                    })
                 }
-                this.insertMatches()
-            }
-        );
+            )
+        })
     }
 
-    insertMatches(){
-        const { matches } = this.state;
-        this.setState({loader: true});
-        if (matches.length > 0) {
-          insertRows(matches)
-              .then(data => {
-                    if(data.errors) {
-                        throw new Error(data.message)
-                    } else {
-                        this.setState({
-                            matches: [],
-                            loader: false
+    filterMatchesWitoutOdds = () => {
+        this.setState({
+            matches: this.state.matches.filter( match => match.odds && match.odds.length > 15)
+        })
+    }
+
+    validateMatches = () => {
+        this.filterMatchesWitoutOdds();
+        this.state.matches.forEach(match => {
+            validateRow(match.id)
+                .then( res => {
+                    if (res.length > 0) {
+                        this.setState( prevState => {
+                            let matches = prevState.matches.filter( match => !match.id);
+                            return ({ matches })
                         })
                     }
-          }).catch(error => {
-              this.setState({
-                  error: JSON.stringify(error.message)
-              })
-          });
-        } else {
-            this.setState({loader: false})
-        }
+                })
+        });
+        const { matches } = this.state;
+        let dataForDB = matches.map( match => Object.assign({}, match, {ss: getMatchScore(match.ss)}));
+        insertRows(dataForDB)
     }
+
 
 
     render(){
@@ -113,25 +79,19 @@ class EndedEvents extends Component{
             <form className="container" onSubmit={(e) => this.handleSubmit(e)}>
                 <div className="form-group">
                     <label htmlFor="date">Enter date</label>
-                    <input type="text" className="form-control" id="date"
-                           placeholder="Enter date" onChange={(e) => this.setState({ dates: e.target.value })}/>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="tournament">Tournament ID</label>
-                    <input type="number" className="form-control" id="tournament"
-                           placeholder="Tournament ID" onChange={(e) => this.setState({ tournamentId: e.target.value })}/>
+                    <input 
+                        type="text"
+                        className="form-control" 
+                        id="date"
+                        placeholder="Enter date" 
+                        onChange={(e) => this.setState({ date: e.target.value })}
+                    />
                 </div>
                 <button type="submit" className="btn btn-primary">Get</button>
             </form>
                 <br/>
                 {matches.length}
-
-                {matches.length > 0 &&
-                <button
-                    onClick={this.validateMatches}
-                >
-                    Insert in DB
-                </button>}
+                {matches.length > 0 &&  <button  className="btn btn-info" onClick={this.validateMatches}>Validate and Store in DB</button>}
                 {error && <div>Error: {error}</div>}
                 <div className="loading_indicator"><Loader type="Puff" color="#00BFFF" height={80} width={80} visible={loader}/></div>
             </div>
