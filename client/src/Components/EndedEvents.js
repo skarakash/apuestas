@@ -63,8 +63,10 @@ class EndedEvents extends Component{
                 })
         });
         const { matches } = this.state;
-        let dataForDB = matches.map( match => Object.assign({}, match, {ss: getMatchScore(match.ss)}));
-        insertRows(dataForDB)
+        let dataForDB = matches.map( match => Object.assign({}, match, {ss: getMatchScore(match.ss)})).filter(match => match.odds.length > 0);
+        if (dataForDB.length > 0){
+            insertRows(dataForDB)
+        }
     }
 
 

@@ -1,5 +1,3 @@
-const ids = require('./ids');
-
 const getMatchMinute = (str) => {
   return str ? Number(str.split(":")[0]) : 0;
 };
@@ -24,7 +22,7 @@ const transformOddsArray = data => {
   })
 
   odds = removeDuplicates(odds, 'time');
-  return odds = odds.map(odd => Object.assign({}, {[odd.time]: odd}));
+  return odds = odds.map(odd => Object.assign({}, {[odd.time]: odd})); 
   
 }
 

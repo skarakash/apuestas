@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const routes = require('./routes/routes');
 
+const { mongo_uri } = require('./config');
+
 const app = express();
 const port = 5000;
 
@@ -16,15 +18,26 @@ app.use((req, res, next) => {
 
 app.use('/', routes); 
 
-mongoose.connect(
-    'mongodb+srv://serg_ka:highbury@apuestas-ysqq3.mongodb.net/Stats?retryWrites=true&w=majority',
-    {
+
+const startServer = () => {
+    app.listen(port);
+    console.log(`App started on port ${port}`)
+};
+
+const connectDb = () => {
+    mongoose.Promise = require('bluebird');
+    const options = {
         useNewUrlParser: true,
         useUnifiedTopology: true
-    }
-)
-    .then(() => console.log('Mongo connected'))
-    .catch(err => console.log(err));
+    };
 
-app.listen(port, ()=> console.log(`running on ${port}`));
+    mongoose.connect(mongo_uri, options);
+    mongoose.set('useCreateIndex', true);
+    return mongoose.connection;
+};
 
+
+connectDb()
+    .on('error', console.log)
+    .on('disconnected', connectDb)
+    .on('open', startServer)

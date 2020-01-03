@@ -103,7 +103,7 @@ router.post('/insert', async (req, res) => {
 });
 
 router.get('/getlast', async (req, res) => {
-    const query = Game.find().sort({ _id: -1 }).limit(10);
+    const query = Stats.find().sort({ _id: -1 }).limit(10);
     const promise = query.exec();
     promise.then(data => {
         return new Promise(resolve => {
