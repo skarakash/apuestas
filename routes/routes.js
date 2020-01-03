@@ -19,8 +19,8 @@ router.get('/eventsended', (req, res) => {
     })
 });
 
-router.post('/eventview', (req,res) => {
-    const url = `https://api.betsapi.com/v1/event/view?token=${token}&event_id=${req.body.id}`;
+router.get('/eventview', (req,res) => {
+    const url = `https://api.betsapi.com/v1/event/view?token=${token}&event_id=${req.query.id}`;
     const p = new Promise((resolve,reject) => {
         request(
             { url },
@@ -60,7 +60,7 @@ router.get('/inplayevents', (req,res) => {
 
     p.then(
         data => {
-            let games = data.results.filter(game => Number(game.timer.tm) >= 30 && Number(game.timer.tm) <= 55);
+            let games = data.results.filter(game => Number(game.timer.tm) >= 30);
             res.json(games);
         }
     ).catch(err => {
@@ -127,8 +127,34 @@ router.get('/validate', async (req, res) => {
        const promise = response.exec();
        promise.then(data => res.json(data)).catch(err => res.json(err));
     } catch (e) {
-        res.json(e);
+        res.sendStatus(400).json({message: error.message});
     }
 }); 
+
+router.get('/probability', async (req, res) => {
+    try {
+        const over = Match.countDocuments({ $and: [ 
+            { "odds.0.bookieTotal": Number(req.query.kickoff)}, 
+            { "odds.15.bookieTotal": Number(req.query.midhalf) }, 
+            { "odds.30.bookieTotal": Number(req.query.ht) }, 
+            { "ss": {"$gt": Number(52.5)} } 
+        ]});
+        const promise1 = over.exec();
+        const under = Match.countDocuments({ $and: [ 
+            { "odds.0.bookieTotal": Number(req.query.kickoff)}, 
+            { "odds.15.bookieTotal": Number(req.query.midhalf) }, 
+            { "odds.30.bookieTotal": Number(req.query.ht) }, 
+            { "ss": {"$lt": Number(52.5)} } 
+        ]});
+        const promise2 = under.exec();
+
+        let resp = await Promise.all([promise1, promise2]);
+        let [ov, und] = resp;
+        res.json({ov, und})
+    }
+    catch(error) {
+        res.sendStatus(404).json({message: error.message})
+    }
+})
 
 module.exports = router;

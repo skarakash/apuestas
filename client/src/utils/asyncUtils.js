@@ -1,20 +1,19 @@
-async function getEventOdds(id){
+async function getEventOdds(ids) {
     try {
-        const response = await fetch(`/eventodds?&event_id=${id}`);
-        return await response.json();
+        const promises = ids.map( async id => {
+            const response = await fetch(`/eventodds?&event_id=${id}`);
+            return await response.json();
+        });
+       return  await Promise.all(promises);
     } catch (error) {
         return error;
     }
-
 }
 
 async function findSimilar(data){
+    debugger;
     try {
-        const response = await fetch('/probability', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {"Content-Type": "application/json"}
-        });
+        const response = await fetch(`/probability?&kickoff=${data.kickoff}&midhalf=${data.midhalf}&ht=${data.ht}`);
         return await response.json();
     }
     catch (err) {

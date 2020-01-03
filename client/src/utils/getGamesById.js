@@ -1,15 +1,14 @@
 import transformMatchData from "./transformGameObj";
 
 export default async function getAllById(arr){
-    const promises = arr.map( async id => {
-        const response = await fetch('/eventview', {
-            method: 'POST',
-            body: JSON.stringify({id}),
-            headers: {"Content-Type": "application/json"}
-        });
-        return await response.json();
-
+    let promises = arr.map( async id => {
+        try {
+            const response = await fetch(`/eventview?&id=${id}`);
+            let match = await response.json();
+            return transformMatchData(match)
+        } catch (error) {
+            return error
+        }
     });
-    let res =  await Promise.all(promises);
-    return res.map(match => transformMatchData(match)).filter(match => match);
+    return await Promise.all(promises);
 }
