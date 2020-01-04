@@ -1,10 +1,7 @@
-async function getEventOdds(ids) {
+async function getEventOdds(id) {
     try {
-        const promises = ids.map( async id => {
-            const response = await fetch(`/eventodds?&event_id=${id}`);
-            return await response.json();
-        });
-       return  await Promise.all(promises);
+        const response = await fetch(`/eventodds?&event_id=${id}`);
+        return await response.json();
     } catch (error) {
         return error;
     }

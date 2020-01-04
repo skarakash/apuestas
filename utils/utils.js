@@ -17,13 +17,11 @@ const transformOddsArray = data => {
     return []
   }
 
-  let odds = data['78_3'].map( odd => {
-    return Object.assign({}, {time: getMatchMinute(odd['time_str'])}, {total: getMatchTotal(odd['ss'])}, {bookieTotal: Number(odd['handicap'])})
-  })
-
-  odds = removeDuplicates(odds, 'time');
-  return odds = odds.map(odd => Object.assign({}, {[odd.time]: odd})); 
-  
+  let mid = data['78_3'].filter(item => /^15/.test(item.time_str)).map(item => Number(item.handicap));
+  let ht = data['78_3'].filter(item => /^30/.test(item.time_str)).map(item => Number(item.handicap));
+  let minMid = Math.min.apply(null, mid);
+  let minHt = Math.min.apply(null, ht);
+  return {minMid, minHt}
 }
 
 getNumberOfPages = total => {
@@ -39,7 +37,14 @@ getNumberOfPages = total => {
 }
 
 filterGames = arr => {
-  return arr = arr.filter( item => !item.league.name.includes('Women'))
+  arr = arr.map(item => Object.assign({}, 
+    {id: item.id},
+     {time: item.time}, 
+     {league: item.league}, 
+     {home: item.home},
+     {away: item.away}, 
+     {ss: getMatchTotal(item.ss)})).filter( item => !item.league.name.includes('Women') && !item.league.name.includes('Friendlies') )
+  return arr;
 } 
 
 module.exports = {

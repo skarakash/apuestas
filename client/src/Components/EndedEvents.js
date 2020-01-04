@@ -31,13 +31,15 @@ class EndedEvents extends Component{
 
     getOdds = () => {
         const { matches } = this.state;
-        matches.forEach( match => {
+        debugger
+        matches.map( match => {
             getEventOdds(match.id).then(
                 res => {
-                    this.setState( prevState => {
-                        let matches = prevState.matches.map( match => Number(match.id) === Number(res.id) ? {...match, odds: res.odds} : match)
-                        return {matches}
-                    })
+                    // this.setState( prevState => {
+                    //     let matches = prevState.matches.map( match => Number(match.id) === Number(res.id) ? {...match, odds: res.odds} : match)
+                    //     return {matches}
+                    // })
+                    console.log(res)
                 }
             )
         })
