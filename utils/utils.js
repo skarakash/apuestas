@@ -1,27 +1,29 @@
-const getMatchMinute = (str) => {
-  return str ? Number(str.split(":")[0]) : 0;
-};
-
 const getMatchTotal = (str) => {
     return str ? Number(str.split("-").reduce((a, c) => Number(a) + Number(c))) : 0;
 };
 
-const removeDuplicates = (myArr, prop) => {
-  return myArr.filter((obj, pos, arr) => {
-      return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos;
-  });
+const getOddsAtMinute = (data, minute) => {
+  const re = new RegExp(`^${minute}`);
+  let arrayOfMinutes = data.filter(item => re.test(item.time_str))
+  if (arrayOfMinutes.length === 0) {
+    return null
+  } else if (arrayOfMinutes.length === 1) { 
+    return arrayOfMinutes[0].handicap
+  }
+  if (minute === '29'){
+    return arrayOfMinutes.reduce((acc, current) => current.add_time < acc.add_time ? acc : current).handicap;
+  }
+  return arrayOfMinutes.reduce((acc, current) => current.add_time > acc.add_time ? acc : current).handicap;
 }
 
 const transformOddsArray = data => {
   if (!data.hasOwnProperty('78_3') || data['78_3'].length < 10){
-    return []
+    return {}
   }
-
-  let mid = data['78_3'].filter(item => /^15/.test(item.time_str)).map(item => Number(item.handicap));
-  let ht = data['78_3'].filter(item => /^30/.test(item.time_str)).map(item => Number(item.handicap));
-  let minMid = Math.min.apply(null, mid);
-  let minHt = Math.min.apply(null, ht);
-  return {minMid, minHt}
+    let start = getOddsAtMinute(data['78_3'], '00');
+    let mid = getOddsAtMinute(data['78_3'], '15');
+    let ht = getOddsAtMinute(data['78_3'], '30');
+  return {start, mid, ht}
 }
 
 getNumberOfPages = total => {
@@ -47,8 +49,29 @@ filterGames = arr => {
   return arr;
 } 
 
+const getNestedObject = (nestedObj, pathArr) => {
+  return pathArr.reduce((obj, key) => (obj && obj[key] !== 'undefined') ? obj[key] : null, nestedObj);
+}
+
+const getPercentage = (arr, odd) => {
+  const n = arr.filter(res => res > odd).length;
+  if (n === 0 ) return 0;
+
+  return (n / arr.length) * 100
+}
+
+const getDesirable = (arrOfResults, currentOdd) => {
+  if (arrOfResults.length <= 4) return 'Not enough data';
+  const probWithCurr = getPercentage(arrOfResults, currentOdd);
+  if (probWithCurr >= 60) return currentOdd
+
+ return  getDesirable(arrOfResults, currentOdd - 1)
+}
+
 module.exports = {
   transformOddsArray, 
   getNumberOfPages,
-  filterGames
+  filterGames,
+  getNestedObject,
+  getDesirable
 };

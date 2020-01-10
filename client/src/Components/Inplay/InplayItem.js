@@ -3,40 +3,69 @@ import {
     inplayWrapperStyles
 } from './InplayItemStyles'
 
-import { findSimilar } from '../../utils/asyncUtils'
+import { getLatestOdds, getEventOdds, findSimilar, getEventView } from '../../utils/asyncUtils';
 
 class InplayItem extends Component {
     constructor(){
         super();
-        this.getTotal = this.getTotal.bind(this);
-    }
-
-    getTotal =() => {
-        const { odd } = this.props;
-        const { odds } = odd;
-        const pre = odds.filter(item => item.hasOwnProperty('0'))
-        const mid = odds.filter(item => item.hasOwnProperty('15'))
-        const ht = odds.filter(item => item.hasOwnProperty('30'));
-    
-        return {
-            kickoff: pre.length > 0 ? pre[0]['0'].bookieTotal: 0,
-            midhalf: mid.length > 0 ? mid[0]['15'].bookieTotal: 0,
-            ht: ht.length > 0 ? ht[0]['30'].bookieTotal: 0
+        this.state = {
+            latestOdd: null,
+            time: null,
+            allOdds: {},
+            betString: null
         }
+        this.getLatestOds = this.getLatestOds.bind(this);
     }
 
-    calcProb = () => {
-       let data =  this.getTotal();
-       findSimilar(data).then(data => console.log(data));
+    getLatestOds(){
+        const { id } = this.props;
+        getLatestOdds(id)
+        .then(latestOdd => 
+            this.setState({latestOdd})    
+        )
     }
+
+    getAllOdds(){
+        const { id } = this.props;
+        getEventOdds(id)
+            .then(allOdds => {
+                let { odds } = allOdds;
+                const someMissing = Object.keys(odds).some(key => !odds[key])
+                if (someMissing){
+                    return
+                }
+
+                odds.current = this.state.latestOdd.handicap
+                return findSimilar(odds)
+                    .then(toBet => this.setState({toBet}))
+        })
+    }
+
+    getGameInfo(id) {
+        getEventView(id)
+        .then(res => {
+            const { latestOdd } = this.state;
+            if (!latestOdd) {
+                return;
+            }
+            let betString = `${res.league.name}: ${res.home.name} - ${res.away.name} over ${latestOdd.handicap}@${latestOdd.over_od} ${new Date().toGMTString()} #bet365`;
+            console.log(betString)
+            this.setState({betString})
+        })
+    }
+
+
     render(){
-        const { odd } = this.props;
+        const { id } = this.props;
+        const { latestOdd, toBet } = this.state;
         return(
             <div style={inplayWrapperStyles}>
-                    <div>{odd.id}</div>
-                    <div>
-                        <button onClick={()=> this.calcProb()} className="btn btn-large btn-block btn-success">button</button>
-                    </div>             
+               <button className="btn btn-warning" onClick={() => this.getGameInfo(id)}>{id}</button>
+               <button type="button" className="btn btn-danger" onClick={() => this.getLatestOds()}>Latest</button>
+                {latestOdd && <span>{latestOdd.handicap}</span>}
+                {latestOdd &&  <span className="prefer-to-bet-on">{latestOdd.time_str}</span>}
+                <button type="button" className="btn btn-danger" onClick={() => this.getAllOdds()}>Bet On</button>
+                {toBet}
             </div>
         )
     }

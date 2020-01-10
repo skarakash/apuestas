@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Loader from 'react-loader-spinner';
 
-import { fetchEndedMatches, validateRow, getEventOdds, insertRows} from '../utils/asyncUtils'
-import { getMatchScore } from '../utils/utils';
+import { fetchEndedMatches, getEventOdds, insertMatch} from '../utils/asyncUtils'
 
 class EndedEvents extends Component{
     constructor(){
@@ -18,57 +17,40 @@ class EndedEvents extends Component{
         this.getOdds = this.getOdds.bind(this);
     }
 
-    handleSubmit(e){
+    async handleSubmit(e){
         const { date } = this.state;
         e.preventDefault();
         this.setState({error: null, loader: true});
         if (date.length === 8) {
-            fetchEndedMatches(date)
-            .then( matches => this.setState({matches, loader: false}))
-            .then(() => this.getOdds())
+            const matches = await fetchEndedMatches(date);
+            if (matches.length > 0) {
+                this.setState({matches, loader: false})
+                this.getOdds()
+            }
         }
     }
 
-    getOdds = () => {
+    async getOdds() {
         const { matches } = this.state;
-        debugger
-        matches.map( match => {
-            getEventOdds(match.id).then(
-                res => {
-                    // this.setState( prevState => {
-                    //     let matches = prevState.matches.map( match => Number(match.id) === Number(res.id) ? {...match, odds: res.odds} : match)
-                    //     return {matches}
-                    // })
-                    console.log(res)
-                }
-            )
-        })
+        matches.map(async match => {
+           const inPlayodds = await getEventOdds(match.id);
+            this.setState( prevState => {
+              let newMatches = prevState.matches.map( game => Number(game.id) === Number(match.id) ? 
+                {...game, 
+                    start: inPlayodds.odds.start > 0 ? Number(inPlayodds.odds.start) : null, 
+                    mid: inPlayodds.odds.mid > 0 ? Number(inPlayodds.odds.mid) : null, 
+                    ht: inPlayodds.odds.ht > 0 ? Number(inPlayodds.odds.ht) : null
+                } :
+                 game);
+              return { matches: newMatches }
+            })
+        });
     }
 
-    filterMatchesWitoutOdds = () => {
-        this.setState({
-            matches: this.state.matches.filter( match => match.odds && match.odds.length > 15)
-        })
-    }
 
     validateMatches = () => {
-        this.filterMatchesWitoutOdds();
-        this.state.matches.forEach(match => {
-            validateRow(match.id)
-                .then( res => {
-                    if (res.length > 0) {
-                        this.setState( prevState => {
-                            let matches = prevState.matches.filter( match => !match.id);
-                            return ({ matches })
-                        })
-                    }
-                })
-        });
         const { matches } = this.state;
-        let dataForDB = matches.map( match => Object.assign({}, match, {ss: getMatchScore(match.ss)})).filter(match => match.odds.length > 0);
-        if (dataForDB.length > 0){
-            insertRows(dataForDB)
-        }
+        matches.forEach( match => insertMatch(match))
     }
 
 
@@ -95,7 +77,7 @@ class EndedEvents extends Component{
             </form>
                 <br/>
                 {matches.length}
-                {matches.length > 0 &&  <button  className="btn btn-info" onClick={this.validateMatches}>Validate and Store in DB</button>}
+                {matches.length > 0 &&  <button  className="btn btn-info" onClick={this.validateMatches}>Store in DB</button>}
                 {error && <div>Error: {error}</div>}
                 <div className="loading_indicator"><Loader type="Puff" color="#00BFFF" height={80} width={80} visible={loader}/></div>
             </div>

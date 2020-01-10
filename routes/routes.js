@@ -6,6 +6,8 @@ const Match = require('../Models/Match');
 
 const transformOddsArray = require('../utils/utils').transformOddsArray;
 const filterGames = require('../utils/utils').filterGames;
+const getNestedObject = require('../utils/utils').getNestedObject;
+const getDesirable = require('../utils/utils').getDesirable;
 
 router.get('/eventsended', (req, res) => {
     const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.query.day}&page=${req.query.page}`
@@ -20,7 +22,8 @@ router.get('/eventsended', (req, res) => {
 });
 
 router.get('/eventview', (req,res) => {
-    const url = `https://api.betsapi.com/v1/event/view?token=${token}&event_id=${req.query.id}`;
+    const url = `https://api.betsapi.com/v1/event/view?token=${token}&event_id=${req.query.event_id}`;
+    console.log(url);
     const p = new Promise((resolve,reject) => {
         request(
             { url },
@@ -60,8 +63,8 @@ router.get('/inplayevents', (req,res) => {
 
     p.then(
         data => {
-            let games = data.results.filter(game => Number(game.timer.tm) >= 30);
-            res.json(games);
+           // let games = data.results.filter(game => Number(game.timer.tm) >= 30);
+            res.json(data.results);
         }
     ).catch(err => {
         console.log(err);
@@ -97,9 +100,13 @@ router.get('/eventodds', (req,res) => {
 
 router.post('/insert', async (req, res) => {
         const data = req.body;
-        Match.insertMany(data)
-            .then(res => res.sendStatus(200).send('Inserted successfully'))
-            .catch(err => res.json(err))
+        const newMatch = new Match(data);
+        try {
+            const savedMatch = await newMatch.save() 
+            res.json(savedMatch['_id'])
+        } catch (error) {
+            res.status(500).send(error)
+        }
 });
 
 router.get('/getlast', async (req, res) => {
@@ -133,52 +140,35 @@ router.get('/validate', async (req, res) => {
 
 router.get('/probability', async (req, res) => {
     try {
-        const over = Match.countDocuments({ $and: [ 
-            { "odds.0.bookieTotal": Number(req.query.kickoff)}, 
-            { "odds.15.bookieTotal": Number(req.query.midhalf) }, 
-            { "odds.30.bookieTotal": Number(req.query.ht) }, 
-            { "ss": {"$gt": Number(req.query.current)} } 
-        ]});
-        const promise1 = over.exec();
-        const under = Match.countDocuments({ $and: [ 
-            { "odds.0.bookieTotal": Number(req.query.kickoff)}, 
-            { "odds.15.bookieTotal": Number(req.query.midhalf) }, 
-            { "odds.30.bookieTotal": Number(req.query.ht) }, 
-            { "ss": {"$lt": Number(req.query.current)} } 
-        ]});
-        const promise2 = under.exec();
+        const current = req.query.current;
+        let data = await Match.find({ $and: [ 
+            { "start": Number(req.query.start)}, 
+            { "mid": Number(req.query.mid) }, 
+            { "ht": Number(req.query.ht) } 
+             ]}, {"ss": 1});
 
-        let resp = await Promise.all([promise1, promise2]);
-        let [ov, und] = resp;
-        res.json({ov, und})
+        data = data.map(item => item.ss).sort()
+        let p = getDesirable(data, current)
+       res.json(p)
     }
     catch(error) {
-        res.sendStatus(404).json({message: error.message})
+        console.log(error)
+        res.sendStatus(400).send(error)
     }
 })
 
-router.get('/eventoddssummary', (req, res) => {
-    const url = `https://api.betsapi.com/v2/event/odds/summary?token=${token}&event_id=${req.query.event_id}`
-    console.log(url)
-    const p = new Promise((resolve, reject) => {
-        request(
-            { url },
-            (error, response, body) => {
-                if (error || response.statusCode !== 200) {
-                    console.log(error)
-                    res.sendStatus(400).json(reject(error))
-                }
-                resolve(JSON.parse(body));
-            }
-        )
-        });
-
-        p.then(data => {
-            if( data.success === 1) {
-                let kickoffOdds = Number(data.results.Bet365.odds.kickoff['78_3'].handicap)
-                res.json({kickoffOdds, id: req.query.event_id});
-            }
-        }).catch(err => console.log(err))
+router.get('/latestodds', async (req, res) => {
+    const url = `https://api.betsapi.com/v2/event/odds?token=${token}&event_id=${req.query.event_id}`; 
+    request(url, (error, response, body) => {
+        if (error || response.statusCode !== 200){
+            res.sendStatus(400).json(error)
+        }
+        let data = JSON.parse(body);
+        data = data.results.odds['78_3'][0];
+        res.json(data);
+    })
 });
 
 module.exports = router;
+
+//20170414

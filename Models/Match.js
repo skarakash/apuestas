@@ -20,26 +20,30 @@ const MatchSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    time: {
-        type: String,
+    ht: {
+        type: Number,
         required: true
     },
     league: {
-        id: String,
-        name: String,
-        cc: String
+        type: Object,
+        required: true
+    },
+    mid: {
+        type: Number,
+        required: true
+    },
+    start: {
+        type: Number,
+        required: true
     },
     ss: {
         type: Number,
         required: true
     },
-    scores: {
-        type: Object
-    },
-    odds: {
-        type: Object,
+    time: {
+        type: String,
         required: true
-    },
+    }
 });
 
 MatchSchema.plugin(uniqueValidator);
