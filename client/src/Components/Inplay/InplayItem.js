@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
-    inplayWrapperStyles
+    inplayWrapperStyles,
+    inplayWrapperStylesBet
 } from './InplayItemStyles'
 
 import { getLatestOdds, getEventOdds, findSimilar, getEventView } from '../../utils/asyncUtils';
@@ -15,6 +16,12 @@ class InplayItem extends Component {
             betString: null
         }
         this.getLatestOds = this.getLatestOds.bind(this);
+    }
+
+    componentDidMount(){
+        setInterval(() => {
+           // this.getLatestOds();
+        }, 10000)
     }
 
     getLatestOds(){
@@ -59,7 +66,7 @@ class InplayItem extends Component {
         const { id } = this.props;
         const { latestOdd, toBet } = this.state;
         return(
-            <div style={inplayWrapperStyles}>
+            <div style={Number(latestOdd) >= Number(toBet) ? inplayWrapperStylesBet : inplayWrapperStyles}>
                <button className="btn btn-warning" onClick={() => this.getGameInfo(id)}>{id}</button>
                <button type="button" className="btn btn-danger" onClick={() => this.getLatestOds()}>Latest</button>
                 {latestOdd && <span>{latestOdd.handicap}</span>}

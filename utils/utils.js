@@ -35,7 +35,7 @@ getNumberOfPages = total => {
     return Math.round((total / 50)) + 1
   } 
 
-  return 1
+  return 1 
 }
 
 filterGames = arr => {
@@ -56,14 +56,13 @@ const getNestedObject = (nestedObj, pathArr) => {
 const getPercentage = (arr, odd) => {
   const n = arr.filter(res => res > odd).length;
   if (n === 0 ) return 0;
-
   return (n / arr.length) * 100
 }
 
 const getDesirable = (arrOfResults, currentOdd) => {
-  if (arrOfResults.length <= 4) return 'Not enough data';
+  if (arrOfResults.length <= 10) return 'Not enough data';
   const probWithCurr = getPercentage(arrOfResults, currentOdd);
-  if (probWithCurr >= 60) return currentOdd
+  if (probWithCurr >= 80) return currentOdd
 
  return  getDesirable(arrOfResults, currentOdd - 1)
 }

@@ -23,7 +23,6 @@ router.get('/eventsended', (req, res) => {
 
 router.get('/eventview', (req,res) => {
     const url = `https://api.betsapi.com/v1/event/view?token=${token}&event_id=${req.query.event_id}`;
-    console.log(url);
     const p = new Promise((resolve,reject) => {
         request(
             { url },
@@ -63,8 +62,8 @@ router.get('/inplayevents', (req,res) => {
 
     p.then(
         data => {
-           // let games = data.results.filter(game => Number(game.timer.tm) >= 30);
-            res.json(data.results);
+           let games = data.results.filter(game => Number(game.timer.tm) >= 30);
+            res.json(games);
         }
     ).catch(err => {
         console.log(err);
@@ -143,11 +142,12 @@ router.get('/probability', async (req, res) => {
         const current = req.query.current;
         let data = await Match.find({ $and: [ 
             { "start": Number(req.query.start)}, 
-            { "mid": Number(req.query.mid) }, 
+           // { "mid": Number(req.query.mid) }, 
             { "ht": Number(req.query.ht) } 
-             ]}, {"ss": 1});
+             ]}, {"ss": 1, "_id": 0});
 
-        data = data.map(item => item.ss).sort()
+        data = data.map(item => item.ss).sort();
+        console.log(data)
         let p = getDesirable(data, current)
        res.json(p)
     }
@@ -170,5 +170,3 @@ router.get('/latestodds', async (req, res) => {
 });
 
 module.exports = router;
-
-//20170414

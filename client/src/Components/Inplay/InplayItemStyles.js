@@ -55,6 +55,13 @@ const inplayWrapperStyles = {
     alignItems: 'center'
 };
 
+const inplayWrapperStylesBet = {
+    display: 'flex',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    backgroundColor: 'lightgreen'
+}
+
 module.exports = {
     teamsStyles,
     scoreStyles,
@@ -64,5 +71,6 @@ module.exports = {
     probabilityStyles,
     probabilityStylesHigh,
     pStylesHigh,
-    inplayWrapperStyles
+    inplayWrapperStyles,
+    inplayWrapperStylesBet,
 };
