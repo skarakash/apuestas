@@ -8,6 +8,7 @@ const transformOddsArray = require('../utils/utils').transformOddsArray;
 const filterGames = require('../utils/utils').filterGames;
 const getNestedObject = require('../utils/utils').getNestedObject;
 const getDesirable = require('../utils/utils').getDesirable;
+const getMostFrequentOdd = require('../utils/utils').getMostFrequentOdd;
 
 router.get('/eventsended', (req, res) => {
     const url = `https://api.betsapi.com/v2/events/ended?sport_id=78&token=${token}&day=${req.query.day}&page=${req.query.page}`
@@ -62,14 +63,13 @@ router.get('/inplayevents', (req,res) => {
 
     p.then(
         data => {
-           let games = data.results.filter(game => Number(game.timer.tm) >= 30);
+           let games = data.results.filter(game => Number(game.timer.tm) >= 44);
             res.json(games);
         }
     ).catch(err => {
         console.log(err);
-        res.json(err);
+        res.json(err); 
     });
-
 });
 
 router.get('/eventodds', (req,res) => {
@@ -165,6 +165,18 @@ router.get('/latestodds', async (req, res) => {
         }
         let data = JSON.parse(body);
         data = data.results.odds['78_3'][0];
+        res.json(data);
+    })
+});
+
+router.get('/mostfrequentodds', async (req, res) => {
+    const url = `https://api.betsapi.com/v2/event/odds?token=${token}&event_id=${req.query.event_id}`; 
+    request(url, (error, response, body) => {
+        if (error || response.statusCode !== 200){
+            res.sendStatus(400).json(error)
+        }
+        let data = JSON.parse(body);
+        data = getMostFrequentOdd(data.results.odds['78_3']);
         res.json(data);
     })
 });

@@ -41,7 +41,7 @@ async function getLiveGamesIDs(){
         const response = await fetch('/inplayevents');
         const data = await response.json();
         if (data && data.length){
-            return data.filter(item => Number(item.time_status) === 1).map(res => res.id);
+            return data.filter(item => Number(item.time_status) === 1 && Number(game.timer.tm) >= 43).map(res => res.id);
         } else {
             return [];
         }

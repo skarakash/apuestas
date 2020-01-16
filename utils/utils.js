@@ -2,17 +2,20 @@ const getMatchTotal = (str) => {
     return str ? Number(str.split("-").reduce((a, c) => Number(a) + Number(c))) : 0;
 };
 
+const get_min = str => {
+  return str.split(':')[0]
+}
+
 const getOddsAtMinute = (data, minute) => {
   const re = new RegExp(`^${minute}`);
   let arrayOfMinutes = data.filter(item => re.test(item.time_str))
+
   if (arrayOfMinutes.length === 0) {
     return null
   } else if (arrayOfMinutes.length === 1) { 
     return arrayOfMinutes[0].handicap
   }
-  if (minute === '29'){
-    return arrayOfMinutes.reduce((acc, current) => current.add_time < acc.add_time ? acc : current).handicap;
-  }
+
   return arrayOfMinutes.reduce((acc, current) => current.add_time > acc.add_time ? acc : current).handicap;
 }
 
@@ -67,10 +70,26 @@ const getDesirable = (arrOfResults, currentOdd) => {
  return  getDesirable(arrOfResults, currentOdd - 1)
 }
 
+const getMostFrequentOdd = oddsArray => {
+  oddsArray = oddsArray.filter(item => item.time_str);
+
+  let minutes = oddsArray.map(item => get_min(item.time_str))
+  let uniqueMinutes = [...new Set(minutes)].reverse().filter(min => Number(min) <= 53 && Number(min) >= 30);
+
+
+  let uniqueOdds = uniqueMinutes.map(mnute => getOddsAtMinute(oddsArray, mnute)); 
+
+  let obj = {};
+  uniqueOdds.map(item => obj[item] = ((obj[item] || 0) + 1));
+
+  return obj;
+}
+
 module.exports = {
   transformOddsArray, 
   getNumberOfPages,
   filterGames,
   getNestedObject,
-  getDesirable
+  getDesirable,
+  getMostFrequentOdd,
 };
